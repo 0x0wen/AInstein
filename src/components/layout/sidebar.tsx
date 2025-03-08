@@ -89,7 +89,8 @@ export function Sidebar() {
             {studyKits.map((kit) => (
               <Link
                 key={kit.id}
-                to={`/study-kit/${kit.id}`}
+                to={'/study-kit/$id'}
+                params={{ id: kit.id }}
                 className={`flex items-center p-2 rounded-md ${
                   kit.active ? "bg-primary/10 text-primary" : "text-gray-700 hover:bg-gray-100"
                 } mb-1 transition-colors`}
@@ -133,7 +134,8 @@ export function Sidebar() {
                   {recentActivities.map((activity) => (
                     <Link
                       key={activity.id}
-                      to={`/study-kit/${activity.id}`}
+                      to={'/study-kit/$id'}
+                      params={{ id: activity.id }}
                       className="block text-sm p-2 hover:bg-gray-100 rounded-md transition-colors"
                     >
                       <div className="font-medium">{activity.title}</div>

@@ -1,7 +1,7 @@
-import Link from "next/link"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Clock, BookOpen } from "lucide-react"
+import { Link } from "@tanstack/react-router"
 
 interface StudyKitCardProps {
   studyKit: {
@@ -26,7 +26,8 @@ export function StudyKitCard({ studyKit }: StudyKitCardProps) {
   }).format(lastAccessed)
 
   return (
-    <Link href={`/study-kit/${studyKit.id}`}>
+    <Link to={'/study-kit/$id'}
+    params={{ id: studyKit.id }}>
       <Card className="h-full hover:shadow-md transition-shadow overflow-hidden">
         <div className="h-2" style={{ backgroundColor: studyKit.color }} />
         <CardContent className="p-6">

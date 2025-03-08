@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-
+import { Link } from "@tanstack/react-router"
 export function HeroSection() {
   return (
     <section className="py-12 md:py-16 lg:py-20">
@@ -14,10 +13,7 @@ export function HeroSection() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button size="lg" asChild>
-              <Link href="/create-kit">Create Your First Study Kit</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/explore">Explore Features</Link>
+              <Link to="/study-kit/create">Create Your First Study Kit</Link>
             </Button>
           </div>
         </div>

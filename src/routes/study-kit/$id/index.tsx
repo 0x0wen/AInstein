@@ -1,4 +1,3 @@
-"use client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -7,6 +6,11 @@ import { ChatInterface } from "@/components/custom/chat-interface"
 import { VideoGenerator } from "@/components/custom/video-generator"
 import { FlashCards } from "@/components/custom/flash-cards"
 import { QuizGenerator } from "@/components/custom/quiz-generator"
+import { createFileRoute } from '@tanstack/react-router';
+
+export const Route = createFileRoute('/study-kit/$id/')({
+    component: StudyKitPage,
+});
 
 interface StudyKitPageProps {
   params: {

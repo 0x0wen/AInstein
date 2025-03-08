@@ -1,7 +1,3 @@
-"use client"
-
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -9,7 +5,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { BookOpen, Image, Tag } from "lucide-react"
+import { createFileRoute } from '@tanstack/react-router';
 import { useNavigate } from "@tanstack/react-router"
+
+export const Route = createFileRoute('/study-kit/create/')({
+    component: CreateKitPage,
+});
 
 export default function CreateKitPage() {
   const navigate = useNavigate()
