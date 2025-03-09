@@ -45,7 +45,7 @@ export default function CreateKitPage() {
 }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <main className="container mx-auto px-4 py-8 w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Create New Study Kit</h1>
         <p className="text-muted-foreground mt-1">Set up a new learning space for your subject or topic</p>
@@ -164,7 +164,7 @@ export default function CreateKitPage() {
           <Button type="submit">Create Study Kit</Button>
         </div>
       </form>
-    </div>
+    </main>
   )
 }
 
