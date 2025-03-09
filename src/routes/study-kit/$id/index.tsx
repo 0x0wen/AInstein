@@ -94,11 +94,11 @@ export default function StudyKitPage() {
                       </CardHeader>
                     </Card>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh]">
-                    <DialogHeader>
+                  <DialogContent className="w-screen h-screen sm:max-w-screen">
+                    <DialogHeader className='sm:h-fit'>
                       <DialogTitle>{item.title}</DialogTitle>
                     </DialogHeader>
-                    <div className="h-full overflow-hidden">
+                    <div className="w-full h-full overflow-hidden ">
                       <ChatInterface studyKitId={id} />
                     </div>
                   </DialogContent>
@@ -151,7 +151,7 @@ export default function StudyKitPage() {
                       </CardHeader>
                     </Card>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh]">
+                  <DialogContent className="w-screen h-screen sm:max-w-screen">
                     <DialogHeader>
                       <DialogTitle>{video.title}</DialogTitle>
                     </DialogHeader>
@@ -243,7 +243,7 @@ export default function StudyKitPage() {
                         </CardContent>
                       </Card>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl h-[80vh]">
+                  <DialogContent className="w-screen h-screen sm:max-w-screen">
                       <DialogHeader>
                         <DialogTitle>{deck.title} Flash Cards</DialogTitle>
                       </DialogHeader>
@@ -304,7 +304,7 @@ export default function StudyKitPage() {
                       </CardContent>
                     </Card>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh]">
+                  <DialogContent className="w-screen h-screen sm:max-w-screen">
                     <DialogHeader>
                       <DialogTitle>{quiz.title}</DialogTitle>
                     </DialogHeader>
