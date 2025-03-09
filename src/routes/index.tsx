@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Button } from "@/components/ui/button"
-import { StudyKitCard } from '../components/custom/study-kit-card'
-import { HeroSection } from "../components/custom/hero-section"
-import { GettingStartedGuide } from "../components/custom/getting-started-guide"
+import { Button } from '@/components/ui/button';
+import { StudyKitCard } from '../components/custom/study-kit-card';
+import { HeroSection } from '../components/custom/hero-section';
+import { GettingStartedGuide } from '../components/custom/getting-started-guide';
 import { Link } from '@tanstack/react-router';
 import { data } from '@/dummy';
 export const Route = createFileRoute('/')({
-	component: HomePage,
+  component: HomePage,
 });
 
 export default function HomePage() {
@@ -15,7 +15,9 @@ export default function HomePage() {
       <HeroSection />
       <section className="my-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Your Study Kits</h2>
+          <h2 className="text-2xl font-bold text-foreground">
+            Your Study Kits
+          </h2>
           <Button>Create New Kit</Button>
         </div>
 
@@ -28,6 +30,7 @@ export default function HomePage() {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 h-full flex flex-col items-center justify-center text-center hover:border-primary hover:bg-gray-50 transition-colors">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <svg
+                  xlinkTitle=""
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -43,8 +46,12 @@ export default function HomePage() {
                   <path d="M12 5v14" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium mb-2">Create New Study Kit</h3>
-              <p className="text-muted-foreground">Start a new learning journey with a fresh Study Kit</p>
+              <h3 className="text-lg font-medium mb-2 text-foreground">
+                Create New Study Kit
+              </h3>
+              <p className="text-muted-foreground">
+                Start a new learning journey with a fresh Study Kit
+              </p>
             </div>
           </Link>
         </div>
@@ -52,7 +59,5 @@ export default function HomePage() {
 
       <GettingStartedGuide />
     </main>
-  )
+  );
 }
-
-

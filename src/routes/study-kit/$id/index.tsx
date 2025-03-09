@@ -1,30 +1,53 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { MessageSquare, Video, BookOpen, FileQuestion, Clock, BarChart } from "lucide-react"
-import { ChatInterface } from "@/components/custom/chat-interface"
-import { VideoGenerator } from "@/components/custom/video-generator"
-import { FlashCards } from "@/components/custom/flash-cards"
-import { QuizGenerator } from "@/components/custom/quiz-generator"
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  MessageSquare,
+  Video,
+  BookOpen,
+  FileQuestion,
+  Clock,
+  BarChart,
+  FolderDot,
+  CalendarClock,
+} from 'lucide-react';
+import { ChatInterface } from '@/components/custom/chat-interface';
+import { VideoGenerator } from '@/components/custom/video-generator';
+import { FlashCards } from '@/components/custom/flash-cards';
+import { QuizGenerator } from '@/components/custom/quiz-generator';
 import { createFileRoute } from '@tanstack/react-router';
-import {data} from "@/dummy"
+import { data } from '@/dummy';
 
 export const Route = createFileRoute('/study-kit/$id/')({
-    component: StudyKitPage,
+  component: StudyKitPage,
 });
 
 export default function StudyKitPage() {
-  const { id } = Route.useParams()
-  const studykit = data.studyKits.find((kit) => kit.id === id)
+  const { id } = Route.useParams();
+  const studykit = data.studyKits.find((kit) => kit.id === id);
   if (!studykit) {
-    return <div>Study Kit not found</div>
+    return <div>Study Kit not found</div>;
   }
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">{studykit.name}</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              {studykit.name}
+            </h1>
             <p className="text-muted-foreground mt-1">{studykit.description}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -64,7 +87,9 @@ export default function StudyKitPage() {
                   <DialogTrigger asChild>
                     <Card className="cursor-pointer hover:shadow-md transition-shadow">
                       <CardHeader className="p-4">
-                        <CardTitle className="text-base">{item.title}</CardTitle>
+                        <CardTitle className="text-base">
+                          {item.title}
+                        </CardTitle>
                         <CardDescription>{item.date}</CardDescription>
                       </CardHeader>
                     </Card>
@@ -110,7 +135,7 @@ export default function StudyKitPage() {
                     <Card className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden">
                       <div className="relative">
                         <img
-                          src={video.thumbnail || "/placeholder.svg"}
+                          src={video.thumbnail || '/placeholder.svg'}
                           alt={video.title}
                           className="w-full aspect-video object-cover"
                         />
@@ -119,7 +144,9 @@ export default function StudyKitPage() {
                         </div>
                       </div>
                       <CardHeader className="p-4">
-                        <CardTitle className="text-base">{video.title}</CardTitle>
+                        <CardTitle className="text-base">
+                          {video.title}
+                        </CardTitle>
                         <CardDescription>{video.date}</CardDescription>
                       </CardHeader>
                     </Card>
@@ -131,7 +158,7 @@ export default function StudyKitPage() {
                     <div className="h-full overflow-auto">
                       <div className="aspect-video bg-black rounded-lg mb-4">
                         <img
-                          src={video.thumbnail || "/placeholder.svg"}
+                          src={video.thumbnail || '/placeholder.svg'}
                           alt={video.title}
                           className="w-full h-full object-cover rounded-lg"
                         />
@@ -139,8 +166,9 @@ export default function StudyKitPage() {
                       <div className="space-y-4">
                         <h3 className="text-lg font-medium">{video.title}</h3>
                         <p className="text-muted-foreground">
-                          This is a sample video explanation. In a real application, this would be a video explaining
-                          the concept.
+                          This is a sample video explanation. In a real
+                          application, this would be a video explaining the
+                          concept.
                         </p>
                       </div>
                     </div>
@@ -172,52 +200,60 @@ export default function StudyKitPage() {
               </Dialog>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {studykit.flashcardDecks?.map((deck) => (
-                <Dialog key={deck.id}>
-                  <DialogTrigger asChild>
-                    <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardHeader className="p-4">
-                        <CardTitle className="text-base">{deck.title}</CardTitle>
-                        <CardDescription>
-                          {deck.count} cards • Last studied {deck.lastStudied}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <div className="flex justify-between text-sm">
-                          <span>Mastery:</span>
-                          <span
-                            className={`font-medium ${
-                              deck.mastery > 70
-                                ? "text-green-600"
-                                : deck.mastery > 40
-                                  ? "text-amber-600"
-                                  : "text-red-600"
-                            }`}
-                          >
-                            {deck.mastery}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                          <div
-                            className={`h-2 rounded-full ${
-                              deck.mastery > 70 ? "bg-green-600" : deck.mastery > 40 ? "bg-amber-600" : "bg-red-600"
-                            }`}
-                            style={{ width: `${deck.mastery}%` }}
-                          ></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-[80vh]">
-                    <DialogHeader>
-                      <DialogTitle>{deck.title} Flash Cards</DialogTitle>
-                    </DialogHeader>
-                    <div className="h-full overflow-auto">
-                      <FlashCards studyKitId={id} />
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              ))}
+              {studykit.flashcardDecks?.map((deck) => {
+                return (
+                  <Dialog key={deck.id}>
+                    <DialogTrigger asChild>
+                      <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                        <CardHeader className="p-4">
+                          <CardTitle className="text-base">
+                            {deck.title}
+                          </CardTitle>
+                          <CardDescription>
+                            {deck.count} cards • Last studied {deck.lastStudied}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                          <div className="flex justify-between text-sm">
+                            <span>Mastery:</span>
+                            <span
+                              className={`font-medium ${
+                                deck.mastery > 70
+                                  ? 'text-green-600'
+                                  : deck.mastery > 40
+                                    ? 'text-amber-600'
+                                    : 'text-red-600'
+                              }`}
+                            >
+                              {deck.mastery}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                            <div
+                              className={`h-2 rounded-full ${
+                                deck.mastery > 70
+                                  ? 'bg-green-600'
+                                  : deck.mastery > 40
+                                    ? 'bg-amber-600'
+                                    : 'bg-red-600'
+                              }`}
+                              style={{ width: `${deck.mastery}%` }}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl h-[80vh]">
+                      <DialogHeader>
+                        <DialogTitle>{deck.title} Flash Cards</DialogTitle>
+                      </DialogHeader>
+                      <div className="h-full overflow-auto">
+                        <FlashCards studyKitId={id} />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                );
+              })}
             </div>
           </section>
 
@@ -248,7 +284,9 @@ export default function StudyKitPage() {
                   <DialogTrigger asChild>
                     <Card className="cursor-pointer hover:shadow-md transition-shadow">
                       <CardHeader className="p-4">
-                        <CardTitle className="text-base">{quiz.title}</CardTitle>
+                        <CardTitle className="text-base">
+                          {quiz.title}
+                        </CardTitle>
                         <CardDescription>{quiz.date}</CardDescription>
                       </CardHeader>
                       <CardContent className="p-4 pt-0">
@@ -258,7 +296,8 @@ export default function StudyKitPage() {
                           </div>
                           <div>
                             <div className="text-sm">
-                              {Math.round((quiz.score * quiz.questions) / 100)}/{quiz.questions} correct
+                              {Math.round((quiz.score * quiz.questions) / 100)}/
+                              {quiz.questions} correct
                             </div>
                           </div>
                         </div>
@@ -291,7 +330,9 @@ export default function StudyKitPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">12.5 hours</div>
-                <p className="text-xs text-muted-foreground">+2.3 hours this week</p>
+                <p className="text-xs text-muted-foreground">
+                  +2.3 hours this week
+                </p>
               </CardContent>
             </Card>
 
@@ -304,9 +345,14 @@ export default function StudyKitPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{studykit.progress}%</div>
-                <p className="text-xs text-muted-foreground">+5% from last week</p>
+                <p className="text-xs text-muted-foreground">
+                  +5% from last week
+                </p>
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                  <div className="bg-primary h-2 rounded-full" style={{ width: `${studykit.progress}%` }}></div>
+                  <div
+                    className="bg-primary h-2 rounded-full"
+                    style={{ width: `${studykit.progress}%` }}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -320,27 +366,40 @@ export default function StudyKitPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">85%</div>
-                <p className="text-xs text-muted-foreground">Average score on 5 quizzes</p>
+                <p className="text-xs text-muted-foreground">
+                  Average score on 5 quizzes
+                </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+                <CardTitle className="text-sm font-medium flex items-center">
+                  <CalendarClock className="h-4 w-4 mr-2" />
+                  Recent Activity
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="text-sm">
                   <div className="border-b py-3 px-4">
-                    <div className="font-medium">Completed Derivatives Quiz</div>
-                    <div className="text-xs text-muted-foreground">2 hours ago</div>
+                    <div className="font-medium">
+                      Completed Derivatives Quiz
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      2 hours ago
+                    </div>
                   </div>
                   <div className="border-b py-3 px-4">
                     <div className="font-medium">Studied Limits Flashcards</div>
-                    <div className="text-xs text-muted-foreground">Yesterday</div>
+                    <div className="text-xs text-muted-foreground">
+                      Yesterday
+                    </div>
                   </div>
                   <div className="py-3 px-4">
                     <div className="font-medium">Watched Integration Video</div>
-                    <div className="text-xs text-muted-foreground">2 days ago</div>
+                    <div className="text-xs text-muted-foreground">
+                      2 days ago
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -348,21 +407,30 @@ export default function StudyKitPage() {
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Resources</CardTitle>
+                <CardTitle className="text-sm font-medium flex items-center">
+                  <FolderDot className="h-4 w-4 mr-2" />
+                  Resources
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="text-sm">
                   <div className="border-b py-3 px-4">
                     <div className="font-medium">Calculus Textbook.pdf</div>
-                    <div className="text-xs text-muted-foreground">Added 3 days ago</div>
+                    <div className="text-xs text-muted-foreground">
+                      Added 3 days ago
+                    </div>
                   </div>
                   <div className="border-b py-3 px-4">
                     <div className="font-medium">Derivatives Notes.docx</div>
-                    <div className="text-xs text-muted-foreground">Added yesterday</div>
+                    <div className="text-xs text-muted-foreground">
+                      Added yesterday
+                    </div>
                   </div>
                   <div className="py-3 px-4">
                     <div className="font-medium">Integration Examples.pdf</div>
-                    <div className="text-xs text-muted-foreground">Added 5 hours ago</div>
+                    <div className="text-xs text-muted-foreground">
+                      Added 5 hours ago
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -371,6 +439,5 @@ export default function StudyKitPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

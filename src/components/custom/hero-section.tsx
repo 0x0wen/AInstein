@@ -1,15 +1,17 @@
-import { Button } from "@/components/ui/button"
-import { Link } from "@tanstack/react-router"
+import { Button } from '@/components/ui/button';
+import { Link } from '@tanstack/react-router';
 export function HeroSection() {
   return (
     <section className="py-12 md:py-16 lg:py-20">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         <div className="space-y-6">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-            Meet <span className="text-primary">AInstein</span>, your personal AI tutor
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground">
+            Meet <span className="text-primary">AInstein</span>, your personal
+            AI tutor
           </h1>
           <p className="text-xl text-gray-600">
-            Organize your learning journey with Study Kits and access powerful AI tools to master any subject.
+            Organize your learning journey with Study Kits and access powerful
+            AI tools to master any subject.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button size="lg" asChild>
@@ -45,8 +47,9 @@ export function HeroSection() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-medium">
-                  "Hello! I'm AInstein, your AI tutor. Let me help you organize your learning with Study Kits!"
+                <p className="text-sm font-medium text-foreground">
+                  your learning with Study Kits!" "Hello! I'm AInstein, your AI
+                  tutor. Let me help you organize
                 </p>
               </div>
             </div>
@@ -54,6 +57,5 @@ export function HeroSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
-
