@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Link } from "@tanstack/react-router"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
 import {
   BookOpen,
   ChevronLeft,
@@ -14,8 +14,8 @@ import {
   HelpCircle,
   LogOut,
   User,
-} from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,28 +23,33 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(false);
 
   // Sample study kits for the sidebar
   const studyKits = [
-    { id: "1", name: "Calculus Fundamentals", active: true },
-    { id: "2", name: "Organic Chemistry", active: false },
-    { id: "3", name: "World History", active: false },
-  ]
+    { id: '1', name: 'Calculus Fundamentals', active: true },
+    { id: '2', name: 'Organic Chemistry', active: false },
+    { id: '3', name: 'World History', active: false },
+  ];
 
   // Sample recent activities
   const recentActivities = [
-    { id: "1", title: "Derivatives Quiz", type: "quiz", time: "2 hours ago" },
-    { id: "2", title: "Limits Flashcards", type: "flashcards", time: "Yesterday" },
-    { id: "3", title: "Integration Video", type: "video", time: "2 days ago" },
-  ]
+    { id: '1', title: 'Derivatives Quiz', type: 'quiz', time: '2 hours ago' },
+    {
+      id: '2',
+      title: 'Limits Flashcards',
+      type: 'flashcards',
+      time: 'Yesterday',
+    },
+    { id: '3', title: 'Integration Video', type: 'video', time: '2 days ago' },
+  ];
 
   return (
     <aside
-      className={`bg-gray-50 border-r border-gray-200 h-screen sticky top-0 transition-all duration-300 ${collapsed ? "w-16" : "w-64"}`}
+      className={`bg-gray-50 border-r border-gray-200 h-screen sticky top-0 transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}
     >
       <div className="flex flex-col h-full">
         <div className="p-4 flex justify-between items-center border-b border-gray-200">
@@ -65,10 +70,21 @@ export function Sidebar() {
                 <circle cx="12" cy="13" r="3" />
               </svg>
             </div>
-            {!collapsed && <span className="text-xl font-bold text-primary">AInstein</span>}
+            {!collapsed && (
+              <span className="text-xl font-bold text-primary">AInstein</span>
+            )}
           </Link>
-          <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8">
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(!collapsed)}
+            className="h-8 w-8"
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
@@ -83,7 +99,9 @@ export function Sidebar() {
             </Link>
 
             {!collapsed && (
-              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase mt-4">Study Kits</div>
+              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase mt-4">
+                Study Kits
+              </div>
             )}
 
             {studyKits.map((kit) => (
@@ -92,7 +110,9 @@ export function Sidebar() {
                 to={'/study-kit/$id'}
                 params={{ id: kit.id }}
                 className={`flex items-center p-2 rounded-md ${
-                  kit.active ? "bg-primary/10 text-primary" : "text-gray-700 hover:bg-gray-100"
+                  kit.active
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-gray-700 hover:bg-gray-100'
                 } mb-1 transition-colors`}
               >
                 <BookOpen className="h-5 w-5 mr-3" />
@@ -138,8 +158,12 @@ export function Sidebar() {
                       params={{ id: activity.id }}
                       className="block text-sm p-2 hover:bg-gray-100 rounded-md transition-colors"
                     >
-                      <div className="font-medium">{activity.title}</div>
-                      <div className="text-xs text-gray-500">{activity.time}</div>
+                      <div className="font-medium text-foreground">
+                        {activity.title}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {activity.time}
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -150,7 +174,10 @@ export function Sidebar() {
                   <Bookmark className="h-4 w-4 mr-2" />
                   Saved Materials
                 </h3>
-                <Link to={'/study-kit/create'} className="block text-sm p-2 hover:bg-gray-100 rounded-md transition-colors">
+                <Link
+                  to={'/study-kit/create'}
+                  className="block text-foreground text-sm p-2 hover:bg-gray-100 rounded-md transition-colors"
+                >
                   View all saved materials
                 </Link>
               </div>
@@ -167,13 +194,20 @@ export function Sidebar() {
                   className="p-0 h-auto w-full flex items-center justify-start hover:bg-transparent"
                 >
                   <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                    <AvatarImage
+                      src="/placeholder.svg?height=32&width=32"
+                      alt="User"
+                    />
                     <AvatarFallback>US</AvatarFallback>
                   </Avatar>
                   {!collapsed && (
                     <div className="text-left">
-                      <div className="text-sm font-medium">User Name</div>
-                      <div className="text-xs text-muted-foreground">user@example.com</div>
+                      <div className="text-sm font-medium text-foreground">
+                        User Name
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        user@example.com
+                      </div>
                     </div>
                   )}
                 </Button>
@@ -204,6 +238,5 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
-  )
+  );
 }
-

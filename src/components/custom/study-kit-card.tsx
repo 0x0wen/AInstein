@@ -1,40 +1,41 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Clock, BookOpen } from "lucide-react"
-import { Link } from "@tanstack/react-router"
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Clock, BookOpen } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 
 interface StudyKitCardProps {
   studyKit: {
-    id: string
-    name: string
-    description: string
-    subject: string
-    progress: number
-    lastAccessed: string
-    color: string
-  }
+    id: string;
+    name: string;
+    description: string;
+    subject: string;
+    progress: number;
+    lastAccessed: string;
+    color: string;
+  };
 }
 
 export function StudyKitCard({ studyKit }: StudyKitCardProps) {
   // Format the last accessed date
-  const lastAccessed = new Date(studyKit.lastAccessed)
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  }).format(lastAccessed)
+  const lastAccessed = new Date(studyKit.lastAccessed);
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+  }).format(lastAccessed);
 
   return (
-    <Link to={'/study-kit/$id'}
-    params={{ id: studyKit.id }}>
+    <Link to={'/study-kit/$id'} params={{ id: studyKit.id }}>
       <Card className="h-full hover:shadow-md transition-shadow overflow-hidden">
         <div className="h-2" style={{ backgroundColor: studyKit.color }} />
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-lg font-semibold mb-2">{studyKit.name}</h3>
-              <p className="text-sm text-muted-foreground mb-4">{studyKit.description}</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {studyKit.description}
+              </p>
             </div>
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
@@ -66,6 +67,5 @@ export function StudyKitCard({ studyKit }: StudyKitCardProps) {
         </CardFooter>
       </Card>
     </Link>
-  )
+  );
 }
-
