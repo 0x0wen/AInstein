@@ -12,13 +12,12 @@ export const Route = createFileRoute('/')({
 export default function HomePage() {
   return (
     <main className="container mx-auto px-4 py-8">
-      <HeroSection />
-      <section className="my-12">
+      {/* <HeroSection /> */}
+      <section className="">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-foreground">
             Your Study Kits
           </h2>
-          <Button>Create New Kit</Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -57,7 +56,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <GettingStartedGuide />
+      {/* <GettingStartedGuide /> */}
     </main>
   );
 }

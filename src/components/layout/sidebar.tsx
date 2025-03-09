@@ -53,7 +53,7 @@ export function Sidebar() {
               </svg>
             </div>
             {!collapsed && (
-              <span className="text-xl font-bold text-primary">AInstein</span>
+              <span className="text-xl font-bold text-foreground"><span className='text-primary'>ai</span>nstein</span>
             )}
           </Link>
           <Button
@@ -92,7 +92,7 @@ export function Sidebar() {
                 to={'/study-kit/$id'}
                 params={{ id: kit.id }}
                 className={`flex items-center p-2 rounded-md ${
-                  kit.active
+                  kit.id == id
                     ? 'bg-primary/10 text-primary'
                     : 'text-gray-700 hover:bg-gray-100'
                 } mb-1 transition-colors`}
