@@ -9,7 +9,6 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <React.Fragment>
-      <body>
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <div className="flex flex-col min-h-screen">
             <div className="flex flex-1">
@@ -20,7 +19,6 @@ function RootComponent() {
             </div>
           </div>
         </ThemeProvider>
-      </body>
     </React.Fragment>
   );
 }
