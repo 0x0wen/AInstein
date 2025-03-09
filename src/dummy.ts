@@ -44,6 +44,8 @@ export interface StudyKit {
 
 export interface Data {
   studyKits: StudyKit[];
+  recentActivities: { id: string; title: string; type: string; time: string }[];
+  bookmarkedItems: { id: string; title: string; type: string }[];
 }
 
 export const data: Data = {
@@ -169,5 +171,14 @@ export const data: Data = {
         { id: "2", title: "Cold War Quiz", score: 85, questions: 25, date: "Nov 15, 2023" },
       ],
     },
+  ],
+  recentActivities: [
+    { id: "1", title: "Derivatives Quiz", type: "quiz", time: "2 hours ago" },
+    { id: "2", title: "Limits Flashcards", type: "flashcards", time: "Yesterday" },
+    { id: "3", title: "Integration Video", type: "video", time: "2 days ago" },
+  ],
+  bookmarkedItems: [
+    { id: "1", title: "Reaction Mechanisms Explained", type: "video" },
+    { id: "2", title: "Functional Groups Flashcards", type: "flashcards" },
   ],
 };

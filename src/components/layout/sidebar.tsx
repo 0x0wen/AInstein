@@ -24,24 +24,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
+import { useParams } from "@tanstack/react-router"
+import {data} from "@/dummy"
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
-
-  // Sample study kits for the sidebar
-  const studyKits = [
-    { id: "1", name: "Calculus Fundamentals", active: true },
-    { id: "2", name: "Organic Chemistry", active: false },
-    { id: "3", name: "World History", active: false },
-  ]
-
-  // Sample recent activities
-  const recentActivities = [
-    { id: "1", title: "Derivatives Quiz", type: "quiz", time: "2 hours ago" },
-    { id: "2", title: "Limits Flashcards", type: "flashcards", time: "Yesterday" },
-    { id: "3", title: "Integration Video", type: "video", time: "2 days ago" },
-  ]
-
+  const { id } = useParams({ strict: false })
   return (
     <aside
       className={`bg-gray-50 border-r border-gray-200 h-screen sticky top-0 transition-all duration-300 ${collapsed ? "w-16" : "w-64"}`}
@@ -67,7 +54,7 @@ export function Sidebar() {
             </div>
             {!collapsed && <span className="text-xl font-bold text-primary">AInstein</span>}
           </Link>
-          <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={() => {setCollapsed(!collapsed)}} className="h-8 w-8">
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
         </div>
@@ -86,20 +73,19 @@ export function Sidebar() {
               <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase mt-4">Study Kits</div>
             )}
 
-            {studyKits.map((kit) => (
+            {data.studyKits.map((kit) => (
               <Link
                 key={kit.id}
                 to={'/study-kit/$id'}
                 params={{ id: kit.id }}
                 className={`flex items-center p-2 rounded-md ${
-                  kit.active ? "bg-primary/10 text-primary" : "text-gray-700 hover:bg-gray-100"
+                  id == kit.id ? "bg-primary/10 text-primary" : "text-gray-700 hover:bg-gray-100"
                 } mb-1 transition-colors`}
               >
                 <BookOpen className="h-5 w-5 mr-3" />
                 {!collapsed && <span className="truncate">{kit.name}</span>}
               </Link>
             ))}
-
             <Link
               to="/study-kit/create"
               className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-md mb-1 transition-colors"
@@ -131,7 +117,7 @@ export function Sidebar() {
                   Recent Activity
                 </h3>
                 <div className="space-y-2">
-                  {recentActivities.map((activity) => (
+                  {data.recentActivities.map((activity) => (
                     <Link
                       key={activity.id}
                       to={'/study-kit/$id'}
@@ -148,10 +134,10 @@ export function Sidebar() {
               <div className="p-4 border-t border-gray-200">
                 <h3 className="font-medium text-sm text-gray-500 mb-2 flex items-center">
                   <Bookmark className="h-4 w-4 mr-2" />
-                  Saved Materials
+                  Bookmark
                 </h3>
                 <Link to={'/study-kit/create'} className="block text-sm p-2 hover:bg-gray-100 rounded-md transition-colors">
-                  View all saved materials
+                  View all bookmark
                 </Link>
               </div>
             </>
