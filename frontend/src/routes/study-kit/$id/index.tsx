@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -151,9 +152,10 @@ export default function StudyKitPage() {
                       </CardHeader>
                     </Card>
                   </DialogTrigger>
-                  <DialogContent className="w-screen h-screen sm:max-w-screen">
+                  <DialogContent className="max-w-4xl h-[80vh]">
                     <DialogHeader>
                       <DialogTitle>{video.title}</DialogTitle>
+                      <DialogClose />
                     </DialogHeader>
                     <div className="h-full overflow-auto">
                       <div className="aspect-video bg-black rounded-lg mb-4">
