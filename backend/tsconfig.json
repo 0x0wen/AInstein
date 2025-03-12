@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"jsx": "react-jsx",
+		"jsxImportSource": "hono/jsx",
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+		"target": "es2017", // It could be es2017 or higher like es2018, es2019, etc.
+		"module": "esnext", // or any of the other options listed above that are appropriate for your project
+		"moduleResolution": "node" // This is often needed for dealing with modules in node_modules
+	}
+}
