@@ -10,9 +10,9 @@ export class UserController {
 
 	async createUser(c: any) {
 		try {
-			const userData = c.req.valid("json") as Partial<IUser>;
-			const user = await UserService.createUser(userData);
-			return c.json(user, 201);
+			const userData = c.req.valid("json") as IUser;
+			const result = await UserService.createUser(userData);
+			return c.json({message: 'User signed up successfully', username: result.user.username, token: result.token}, 201);
 		} catch (error) {
 			return c.json(
 				{
@@ -54,15 +54,11 @@ export class UserController {
 				return c.json({ message: "User not found" }, 404);
 			}
 
-			const isValid = await UserService.loginUser({ email, password });
-
-			if (!isValid) {
-				return c.json({ message: "Invalid credentials" }, 401);
-			}
+			const token = await UserService.loginUser({ email, password });
 
 			return c.json({
 				message: "Login successful",
-				userId: user.username,
+				token
 			}, 200);
 		} catch (error) {
 			return c.json(
@@ -79,7 +75,7 @@ export class UserController {
 		try {
 			const result = await UserService.deleteAllUsers();
 			return c.json({
-				message: "All users deleted",
+				message: "All users deleted successfully",
 				deletedCount: result.deletedCount,
 			}, 200);
 		} catch (error) {
