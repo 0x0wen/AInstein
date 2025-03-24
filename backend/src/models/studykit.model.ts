@@ -1,8 +1,26 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
+import { IUser } from "./user.model";
 
-const StudykitSchema = new Schema(
+export interface IStudykit {
+	title: string;
+	description: string;
+	userId: mongoose.Types.ObjectId | IUser;
+	subject: string;
+	tags: string[];
+	coverImage: string;
+	colorTheme: string;
+	isPublic: boolean;
+	progress: {
+		percentage: number;
+		lastActivity: Date;
+	};
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+const StudykitSchema: Schema<IStudykit> = new Schema(
 	{
-		name: { type: String, required: true },
+		title: { type: String, required: true },
 		description: { type: String },
 		userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
 		subject: { type: String },
@@ -18,4 +36,7 @@ const StudykitSchema = new Schema(
 	{ timestamps: true },
 );
 
-export default StudykitSchema;
+export const Studykit: Model<IStudykit> = mongoose.model<IStudykit>(
+	"Studykit",
+	StudykitSchema,
+);

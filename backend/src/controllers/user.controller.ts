@@ -12,7 +12,14 @@ export class UserController {
 		try {
 			const userData = c.req.valid("json") as IUser;
 			const result = await UserService.createUser(userData);
-			return c.json({message: 'User signed up successfully', username: result.user.username, token: result.token}, 201);
+			return c.json(
+				{
+					message: "User signed up successfully",
+					username: result.user.username,
+					token: result.token,
+				},
+				201,
+			);
 		} catch (error) {
 			return c.json(
 				{
@@ -56,10 +63,13 @@ export class UserController {
 
 			const token = await UserService.loginUser({ email, password });
 
-			return c.json({
-				message: "Login successful",
-				token
-			}, 200);
+			return c.json(
+				{
+					message: "Login successful",
+					token,
+				},
+				200,
+			);
 		} catch (error) {
 			return c.json(
 				{
@@ -74,10 +84,13 @@ export class UserController {
 	async deleteAllUsers(c: any) {
 		try {
 			const result = await UserService.deleteAllUsers();
-			return c.json({
-				message: "All users deleted successfully",
-				deletedCount: result.deletedCount,
-			}, 200);
+			return c.json(
+				{
+					message: "All users deleted successfully",
+					deletedCount: result.deletedCount,
+				},
+				200,
+			);
 		} catch (error) {
 			return c.json(
 				{

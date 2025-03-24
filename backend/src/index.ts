@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import chat from "@/routes/chat.route";
 import video from "@/routes/video.route";
 import user from "@/routes/user.route";
+import studykit from "@/routes/studykit.route";
 import { serve } from "bun";
 import { connectToDatabase } from "./utils/db";
 const api = new OpenAPIHono().basePath("/api");
@@ -42,12 +43,12 @@ api.get("/", (c) => {
 	return c.text("Hello Hono!");
 });
 
-// api.route("/studykit", chat);
+api.route("/studykit", studykit);
+api.route("/user", user);
 // api.route("/chat", chat);
 // api.route("/video", chat);
 // api.route("/flashcard", chat);
 // api.route("/quiz", chat);
-api.route("/user", user);
 
 const port = Bun.env.PORT || 3000;
 
