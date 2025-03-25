@@ -1,42 +1,69 @@
-import mongoose, { Schema, Model } from "mongoose";
-import { IUser } from "./user.model";
+import mongoose, { Schema, Document, Model } from "mongoose";
+import { IUser, UserRequestSchema } from "./user.model";
+import * as z from 'zod';
 
 export interface IStudykit {
-	title: string;
-	description: string;
-	userId: mongoose.Types.ObjectId | IUser;
-	subject: string;
-	tags: string[];
-	coverImage: string;
-	colorTheme: string;
-	isPublic: boolean;
-	progress: {
-		percentage: number;
-		lastActivity: Date;
-	};
-	createdAt: Date;
-	updatedAt: Date;
+  title: string;
+  description: string;
+  userId: mongoose.Types.ObjectId | IUser;
+  subject: string;
+  tags: string[];
+  coverImage: string;
+  colorTheme: string;
+  isPublic: boolean;
+  progress: {
+    percentage: number;
+    lastActivity: Date;
+  };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const StudykitSchema: Schema<IStudykit> = new Schema(
-	{
-		title: { type: String, required: true },
-		description: { type: String },
-		userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-		subject: { type: String },
-		tags: [{ type: String }],
-		coverImage: { type: String },
-		colorTheme: { type: String },
-		isPublic: { type: Boolean, default: false },
-		progress: {
-			percentage: { type: Number },
-			lastActivity: { type: Date },
-		},
-	},
-	{ timestamps: true },
+export interface IStudykitDocument extends IStudykit, Document {}
+
+const StudykitSchema: Schema<IStudykitDocument> = new Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String, default: "" },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    subject: { type: String, default: "" },
+    tags: [{ type: String }],
+    coverImage: { type: String, default: "" },
+    colorTheme: { type: String, default: "#1E88E5" }, // Default to primary blue from spec
+    isPublic: { type: Boolean, default: false },
+    progress: {
+      percentage: { type: Number, default: 0 },
+      lastActivity: { type: Date, default: Date.now }
+    }
+  },
+  { timestamps: true }
 );
 
-export const Studykit: Model<IStudykit> = mongoose.model<IStudykit>(
-	"Studykit",
-	StudykitSchema,
+// Add indexes for common queries
+StudykitSchema.index({ userId: 1, title: 1 });
+StudykitSchema.index({ isPublic: 1 }, { sparse: true });
+
+
+export const StudyKitRequestSchema = z.object({
+  title: z.string().min(1, { message: "Title is required" }),
+  description: z.string().optional(),
+  subject: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  coverImage: z.string().optional(),
+  colorTheme: z.string().optional().default("#1E88E5"),
+  isPublic: z.boolean().optional().default(false),
+  progress: z.object({
+    percentage: z.number().min(0).max(100).optional().default(0),
+    lastActivity: z.coerce.date().optional()
+  }).optional()
+});
+
+export const StudyKitResponseSchema = StudyKitRequestSchema.extend({
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date()
+});
+
+export const Studykit: Model<IStudykitDocument> = mongoose.model<IStudykitDocument>(
+  "Studykit",
+  StudykitSchema
 );
