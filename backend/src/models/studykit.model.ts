@@ -3,14 +3,11 @@ import { IUser, UserRequestSchema } from "./user.model";
 import * as z from 'zod';
 
 export interface IStudykit {
-  title: string;
+  name: string;
   description: string;
   userId: mongoose.Types.ObjectId | IUser;
-  subject: string;
-  tags: string[];
   coverImage: string;
   colorTheme: string;
-  isPublic: boolean;
   progress: {
     percentage: number;
     lastActivity: Date;
@@ -23,14 +20,11 @@ export interface IStudykitDocument extends IStudykit, Document {}
 
 const StudykitSchema: Schema<IStudykitDocument> = new Schema(
   {
-    title: { type: String, required: true },
+    name: { type: String, required: true },
     description: { type: String, default: "" },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    subject: { type: String, default: "" },
-    tags: [{ type: String }],
     coverImage: { type: String, default: "" },
     colorTheme: { type: String, default: "#1E88E5" }, // Default to primary blue from spec
-    isPublic: { type: Boolean, default: false },
     progress: {
       percentage: { type: Number, default: 0 },
       lastActivity: { type: Date, default: Date.now }
@@ -40,18 +34,14 @@ const StudykitSchema: Schema<IStudykitDocument> = new Schema(
 );
 
 // Add indexes for common queries
-StudykitSchema.index({ userId: 1, title: 1 });
-StudykitSchema.index({ isPublic: 1 }, { sparse: true });
+StudykitSchema.index({ userId: 1, name: 1 });
 
 
 export const StudyKitRequestSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
+  name: z.string().min(1, { message: "Name is required" }),
   description: z.string().optional(),
-  subject: z.string().optional(),
-  tags: z.array(z.string()).optional(),
   coverImage: z.string().optional(),
   colorTheme: z.string().optional().default("#1E88E5"),
-  isPublic: z.boolean().optional().default(false),
   progress: z.object({
     percentage: z.number().min(0).max(100).optional().default(0),
     lastActivity: z.coerce.date().optional()
