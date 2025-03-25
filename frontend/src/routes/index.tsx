@@ -4,12 +4,28 @@ import { StudyKitCard } from '../components/custom/study-kit-card';
 import { HeroSection } from '../components/custom/hero-section';
 import { GettingStartedGuide } from '../components/custom/getting-started-guide';
 import { Link } from '@tanstack/react-router';
-import { data } from '@/dummy';
+import { data as dummy } from '@/dummy';
+import {
+  useQuery,
+} from '@tanstack/react-query'
+
+import api from '@/lib/api';
 export const Route = createFileRoute('/')({
   component: HomePage,
 });
 
 export default function HomePage() {
+  const { isPending, error, data } = useQuery({
+    queryKey: ["studykit"],
+    queryFn: async () => {
+      return (
+        await api.get('/studykit').then((res) => {
+          console.log(res.data);
+          return res;
+        })
+      );
+    },
+  });
   return (
     <main className="container mx-auto px-4 py-8">
       {/* <HeroSection /> */}
@@ -20,11 +36,13 @@ export default function HomePage() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.studyKits.map((kit) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-black">
+          {dummy.studyKits.map((kit) => (
             <StudyKitCard key={kit.id} studyKit={kit} />
           ))}
-
+          {data?.data.map((kit) => (
+            <StudyKitCard key={kit.id} studyKit={kit} />
+          ))}
           <Link to="/study-kit/create" className="block">
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 h-full flex flex-col items-center justify-center text-center hover:border-primary hover:bg-gray-50 transition-colors">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">

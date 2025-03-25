@@ -4,9 +4,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { BookOpen, Image, Tag } from "lucide-react"
+import { BookOpen, Image } from "lucide-react"
 import { createFileRoute } from '@tanstack/react-router';
 import { useNavigate } from "@tanstack/react-router"
+import api from "@/lib/api"
 
 export const Route = createFileRoute('/study-kit/create/')({
     component: CreateKitPage,
@@ -17,8 +18,12 @@ export default function CreateKitPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    subject: "",
-    color: "#1E88E5",
+    coverImage: '',
+    colorTheme: '',
+    progress: {
+      percentage: 0,
+      lastActivity: new Date(),
+    },
   })
 
   const colorOptions = [
@@ -37,10 +42,8 @@ export default function CreateKitPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would save the study kit to a database
     console.log("Creating study kit:", formData)
-
-    // Redirect to the new study kit page
+    api.post("/studykit", formData)
     navigate({ to: "/study-kit/create"})
 }
 
@@ -88,26 +91,6 @@ export default function CreateKitPage() {
                   rows={3}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="subject" className="text-base">
-                  Subject or Topic
-                </Label>
-                <div className="flex items-center">
-                  <div className="bg-primary/10 p-2 rounded-l-md border border-r-0 border-input">
-                    <Tag className="h-5 w-5 text-primary" />
-                  </div>
-                  <Input
-                    id="subject"
-                    name="subject"
-                    placeholder="e.g., Mathematics, History, Programming"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="rounded-l-none"
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label className="text-base">Color Theme</Label>
                 <div className="flex flex-wrap gap-3">
@@ -115,13 +98,13 @@ export default function CreateKitPage() {
                     <div
                       key={color.value}
                       className={`w-10 h-10 rounded-full cursor-pointer flex items-center justify-center border-2 ${
-                        formData.color === color.value ? "border-black dark:border-white" : "border-transparent"
+                        formData.colorTheme === color.value ? "border-black dark:border-white" : "border-transparent"
                       }`}
                       style={{ backgroundColor: color.value }}
                       onClick={() => setFormData((prev) => ({ ...prev, color: color.value }))}
                       title={color.name}
                     >
-                      {formData.color === color.value && (
+                      {formData.colorTheme === color.value && (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="16"

@@ -32,9 +32,10 @@ export interface StudyKit {
   id: string;
   name: string;
   description: string;
-  subject: string;
-  progress: number;
-  lastAccessed: string;
+  progress: {
+    percentage: number;
+    lastActivity: string;
+  }
   color: string;
   chatItems?: ChatItem[];
   videoItems?: VideoItem[];
@@ -54,9 +55,10 @@ export const data: Data = {
       id: "1",
       name: "Calculus Fundamentals",
       description: "Learn the basics of calculus including limits, derivatives, and integrals",
-      subject: "Mathematics",
-      progress: 65,
-      lastAccessed: "2023-11-15T14:30:00Z",
+      progress: {
+        percentage: 65,
+        lastActivity: "2023-11-15T14:30:00Z"
+      },
       color: "#1E88E5",
       chatItems: [
         { id: "1", title: "Derivatives Discussion", date: "Nov 15, 2023" },
@@ -101,9 +103,10 @@ export const data: Data = {
       id: "2",
       name: "Organic Chemistry",
       description: "Study organic compounds, reactions, and laboratory techniques",
-      subject: "Chemistry",
-      progress: 32,
-      lastAccessed: "2023-11-14T09:15:00Z",
+      progress: {
+        percentage: 65,
+        lastActivity: "2023-11-15T14:30:00Z"
+      },
       color: "#7CB342",
       chatItems: [
         { id: "1", title: "Reaction Mechanisms", date: "Nov 14, 2023" },
@@ -138,9 +141,10 @@ export const data: Data = {
       id: "3",
       name: "World History",
       description: "Explore major historical events and their impact on modern society",
-      subject: "History",
-      progress: 78,
-      lastAccessed: "2023-11-16T16:45:00Z",
+      progress: {
+        percentage: 65,
+        lastActivity: "2023-11-15T14:30:00Z"
+      },
       color: "#FFA000",
       chatItems: [
         { id: "1", title: "World War I Discussion", date: "Nov 16, 2023" },

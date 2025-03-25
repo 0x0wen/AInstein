@@ -9,7 +9,10 @@ interface StudyKitCardProps {
     name: string;
     description: string;
     subject: string;
-    progress: number;
+    progress: {
+      percentage: number;
+      lastActivity: string;
+    };
     lastAccessed: string;
     color: string;
   };
@@ -17,7 +20,7 @@ interface StudyKitCardProps {
 
 export function StudyKitCard({ studyKit }: StudyKitCardProps) {
   // Format the last accessed date
-  const lastAccessed = new Date(studyKit.lastAccessed);
+  const lastAccessed = new Date(studyKit.progress.lastActivity);
   const formattedDate = new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
@@ -49,9 +52,9 @@ export function StudyKitCard({ studyKit }: StudyKitCardProps) {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span>Progress</span>
-                <span>{studyKit.progress}%</span>
+                <span>{studyKit.progress.percentage}%</span>
               </div>
-              <Progress value={studyKit.progress} className="h-2" />
+              <Progress value={studyKit.progress.percentage} className="h-2" />
             </div>
 
             <div className="flex items-center text-sm text-muted-foreground">

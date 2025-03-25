@@ -189,7 +189,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
           top: 0;
           color: transparent;
           z-index: -1;
-          -webkit-text-stroke-width: ${strokeWidth}px;
+          -webkit-text-strokeWidth: ${strokeWidth}px;
           -webkit-text-stroke-color: ${strokeColor};
         }
       `}</style>
