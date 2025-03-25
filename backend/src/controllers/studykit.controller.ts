@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import * as StudykitService from "@/services/studykit.service";
 import { IStudykit } from "@/models/studykit.model";
-
+import mongoose from "mongoose";
 export class StudykitController {
 	constructor() {
 		this.fetchAllStudyKit = this.fetchAllStudyKit.bind(this);
@@ -9,7 +9,7 @@ export class StudykitController {
 
 	async fetchAllStudyKit(c: Context) {
 		try {
-			const result = await StudykitService.fetchAllStudykits();
+			const result = await StudykitService.fetchAllStudykits(new mongoose.Types.ObjectId('67e2695d8f4383738ccce306'));
 			return c.json(
 				result,
 				200,
@@ -54,8 +54,9 @@ export class StudykitController {
 
 	async createStudyKit(c: any) {
 		try {
+			console.log(new Date().toISOString())
 			const studykit = c.req.valid("json") as IStudykit;
-			const result = await StudykitService.createStudykit(studykit);
+			const result = await StudykitService.createStudykit({...studykit, userId: new mongoose.Types.ObjectId('67e2695d8f4383738ccce306')});
 			return c.json(
 				{
 					success: true,

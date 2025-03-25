@@ -1,23 +1,10 @@
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { StudykitController } from "@/controllers/studykit.controller";
+import { StudyKitRequestSchema, StudyKitResponseSchema } from "@/models/studykit.model";
 
 const studykit_route = new OpenAPIHono();
-const user_controller = new StudykitController();
-
-const studykitSchema = z.object({
-	title: z.string(),
-	subject: z.string(),
-    coverImage: z.string(),
-    colorTheme: z.string(),
-    isPublic: z.boolean(),
-    progress: z.object({
-        percentage: z.number(),
-        lastActivity: z.string(),
-    }),
-    createdAt: z.string(),
-    updatedAt: z.string(),
-});
+const studykit_controller = new StudykitController();
 
 const errorResponseSchema = z.object({
 	message: z.string(),
@@ -28,19 +15,14 @@ const getAllStudykitRoute = studykit_route.openapi(
 	createRoute({
 		method: "get",
 		path: "/",
-		request: {
-			params: z.object({
-				username: z.string(),
-			}),
-		},
 		responses: {
 			200: {
 				content: {
 					"application/json": {
-						schema: studykitSchema.array().nullable(),
+						schema: StudyKitResponseSchema.array().nullable(),
 					},
 				},
-				description: "User information fetched successfully",
+				description: "Studykit information fetched successfully",
 			},
 			404: {
 				content: {
@@ -59,9 +41,9 @@ const getAllStudykitRoute = studykit_route.openapi(
 				description: "Error fetching studykit model",
 			},
 		},
-		tags: ["User"],
+		tags: ["Studykit"],
 	}),
-	user_controller.fetchAllStudyKit,
+	studykit_controller.fetchAllStudyKit,
 );
 
 const getStudykitRoute = studykit_route.openapi(
@@ -77,10 +59,10 @@ const getStudykitRoute = studykit_route.openapi(
 			200: {
 				content: {
 					"application/json": {
-						schema: studykitSchema.nullable(),
+						schema: StudyKitResponseSchema.nullable(),
 					},
 				},
-				description: "User information fetched successfully",
+				description: "Studykit information fetched successfully",
 			},
 			404: {
 				content: {
@@ -99,9 +81,9 @@ const getStudykitRoute = studykit_route.openapi(
 				description: "Error fetching studykit_route",
 			},
 		},
-		tags: ["User"],
+		tags: ["Studykit"],
 	}),
-	user_controller.fetchStudyKit,
+	studykit_controller.fetchStudyKit,
 );
 
 const updateStudykitRoute = studykit_route.openapi(
@@ -117,10 +99,10 @@ const updateStudykitRoute = studykit_route.openapi(
 			200: {
 				content: {
 					"application/json": {
-						schema: studykitSchema,
+						schema: StudyKitResponseSchema.nullable(),
 					},
 				},
-				description: "User information fetched successfully",
+				description: "Studykit information fetched successfully",
 			},
 			404: {
 				content: {
@@ -139,28 +121,23 @@ const updateStudykitRoute = studykit_route.openapi(
 				description: "Error fetching studykit_route",
 			},
 		},
-		tags: ["User"],
+		tags: ["Studykit"],
 	}),
-	user_controller.updateStudyKit,
+	studykit_controller.updateStudyKit,
 );
 
 const deleteStudykitRoute = studykit_route.openapi(
 	createRoute({
 		method: "delete",
 		path: "/:studykitId",
-		request: {
-			params: z.object({
-				username: z.string(),
-			}),
-		},
 		responses: {
 			200: {
 				content: {
 					"application/json": {
-						schema: studykitSchema.nullable(),
+						schema: StudyKitResponseSchema.nullable(),
 					},
 				},
-				description: "User information fetched successfully",
+				description: "Studykit information fetched successfully",
 			},
 			404: {
 				content: {
@@ -179,9 +156,9 @@ const deleteStudykitRoute = studykit_route.openapi(
 				description: "Error fetching studykit_route",
 			},
 		},
-		tags: ["User"],
+		tags: ["Studykit"],
 	}),
-	user_controller.deleteStudyKit,
+	studykit_controller.deleteStudyKit,
 );
 
 const createStudykitRoute = studykit_route.openapi(
@@ -192,7 +169,7 @@ const createStudykitRoute = studykit_route.openapi(
 			body: {
 				content: {
 					"application/json": {
-						schema: studykitSchema,
+						schema: StudyKitRequestSchema,
 					},
 				},
 			},
@@ -201,7 +178,7 @@ const createStudykitRoute = studykit_route.openapi(
 			201: {
 				content: {
 					"application/json": {
-						schema: studykitSchema,
+						schema: StudyKitResponseSchema,
 					},
 				},
 				description: "User created successfully",
@@ -215,9 +192,9 @@ const createStudykitRoute = studykit_route.openapi(
 				description: "Error creating study kit",
 			},
 		},
-		tags: ["User"],
+		tags: ["Studykit"],
 	}),
-	user_controller.createStudyKit,
+	studykit_controller.createStudyKit,
 );
 
 export {

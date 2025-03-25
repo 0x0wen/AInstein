@@ -1,5 +1,6 @@
 import { Studykit, IStudykit } from "@/models/studykit.model";
-
+import mongoose from "mongoose";
+import { IUser } from "@/models/user.model";
 export async function createStudykit(
 	studykitData: IStudykit,
 ): Promise<IStudykit> {
@@ -8,8 +9,8 @@ export async function createStudykit(
 	return studykit.toJSON();
 }
 
-export async function fetchAllStudykits(): Promise<IStudykit[]> {
-	return await Studykit.find();
+export async function fetchAllStudykits(userId: mongoose.Types.ObjectId | IUser): Promise<IStudykit[]> {
+	return await Studykit.find({userId: userId});
 }
 
 export async function fetchStudykitById(

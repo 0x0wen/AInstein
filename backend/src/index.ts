@@ -29,7 +29,7 @@ api.onError((err, c) => {
 });
 
 api.use(logger());
-
+api.use(cors());
 api.notFound((c) => {
 	return c.json(
 		{
