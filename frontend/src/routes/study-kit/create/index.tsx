@@ -1,57 +1,116 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { BookOpen, Image } from "lucide-react"
+'use client';
+
+import type React from 'react';
+
+import { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { BookOpen, Image, X } from 'lucide-react';
 import { createFileRoute } from '@tanstack/react-router';
-import { useNavigate } from "@tanstack/react-router"
-import api from "@/lib/api"
+import { useNavigate } from '@tanstack/react-router';
+import api from '@/lib/api';
+
+
+const colorOptions = [
+  { name: 'Blue', value: '#1E88E5' },
+  { name: 'Green', value: '#7CB342' },
+  { name: 'Amber', value: '#FFA000' },
+  { name: 'Red', value: '#E53935' },
+  { name: 'Purple', value: '#8E24AA' },
+  { name: 'Teal', value: '#00897B' },
+];
 
 export const Route = createFileRoute('/study-kit/create/')({
-    component: CreateKitPage,
+  component: CreateKitPage,
 });
 
 export default function CreateKitPage() {
-  const navigate = useNavigate()
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [formData, setFormData] = useState<{
+    name: string
+    description: string
+    coverImage : string | File
+    colorTheme : string
+    progress : {
+      percentage: number
+      lastActivity: Date
+    }
+  }>({
+    name: '',
+    description: '',
     coverImage: '',
-    colorTheme: '',
+    colorTheme: (colorOptions.find((color)=> color.name === 'Blue'))?.value || '#1E88E5',
     progress: {
       percentage: 0,
       lastActivity: new Date(),
     },
-  })
+  });
 
-  const colorOptions = [
-    { name: "Blue", value: "#1E88E5" },
-    { name: "Green", value: "#7CB342" },
-    { name: "Amber", value: "#FFA000" },
-    { name: "Red", value: "#E53935" },
-    { name: "Purple", value: "#8E24AA" },
-    { name: "Teal", value: "#00897B" },
-  ]
+  
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Create a preview URL for the selected image
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+
+    // Update form data with the file
+    setFormData((prev) => ({
+      ...prev,
+      coverImage: file,
+    }));
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    setFormData((prev) => ({ ...prev, coverImage: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Creating study kit:", formData)
-    api.post("/studykit", formData)
-    navigate({ to: "/study-kit/create"})
-}
+    e.preventDefault();
+    console.log('Creating study kit:', formData);
+
+    // Create FormData for file upload
+    const submitData = new FormData();
+    submitData.append('name', formData.name);
+    submitData.append('description', formData.description);
+    submitData.append('colorTheme', formData.colorTheme);
+
+    // Only append the file if it exists
+    if (formData.coverImage && typeof formData.coverImage !== 'string') {
+      submitData.append('coverImage', formData.coverImage);
+    }
+
+    api.post('/studykit', submitData);
+    navigate({ to: '/study-kit/create' });
+  };
 
   return (
     <main className="container mx-auto px-4 py-8 w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Create New Study Kit</h1>
-        <p className="text-muted-foreground mt-1">Set up a new learning space for your subject or topic</p>
+        <p className="text-muted-foreground mt-1">
+          Set up a new learning space for your subject or topic
+        </p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -60,7 +119,7 @@ export default function CreateKitPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base">
-                  Study Kit Name
+                  Study Kit Name 
                 </Label>
                 <div className="flex items-center">
                   <div className="bg-primary/10 p-2 rounded-l-md border border-r-0 border-input">
@@ -98,10 +157,17 @@ export default function CreateKitPage() {
                     <div
                       key={color.value}
                       className={`w-10 h-10 rounded-full cursor-pointer flex items-center justify-center border-2 ${
-                        formData.colorTheme === color.value ? "border-black dark:border-white" : "border-transparent"
+                        formData.colorTheme === color.value
+                          ? 'border-black dark:border-white'
+                          : 'border-transparent'
                       }`}
                       style={{ backgroundColor: color.value }}
-                      onClick={() => setFormData((prev) => ({ ...prev, color: color.value }))}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          colorTheme: color.value,
+                        }))
+                      }
                       title={color.name}
                     >
                       {formData.colorTheme === color.value && (
@@ -127,13 +193,56 @@ export default function CreateKitPage() {
               <div className="space-y-2">
                 <Label className="text-base">Cover Image (Optional)</Label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Image className="h-6 w-6 text-primary" />
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">Drag and drop an image, or click to browse</p>
-                  <Button type="button" variant="outline">
-                    Choose Image
-                  </Button>
+                  {imagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={imagePreview || '/placeholder.svg'}
+                        alt="Cover preview"
+                        className="mx-auto max-h-48 rounded-md object-contain"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                        onClick={handleRemoveImage}
+                        aria-label="Remove image"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {typeof formData.coverImage === 'object' &&
+                        formData.coverImage instanceof File
+                          ? formData.coverImage.name
+                          : 'Selected image'}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Image className="h-6 w-6 text-primary" />
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Drag and drop an image, or click to browse
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="relative"
+                      >
+                        Choose Image
+                        <Input
+                          ref={fileInputRef}
+                          id="picture"
+                          name="coverImage"
+                          type="file"
+                          accept="image/png, image/jpeg, image/jpg, image/webp"
+                          className="absolute w-full h-full opacity-0 cursor-pointer"
+                          onChange={handleFileChange}
+                        />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -141,13 +250,16 @@ export default function CreateKitPage() {
         </Card>
 
         <div className="mt-6 flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => navigate({to: "/"})}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate({ to: '/' })}
+          >
             Cancel
           </Button>
           <Button type="submit">Create Study Kit</Button>
         </div>
       </form>
     </main>
-  )
+  );
 }
-

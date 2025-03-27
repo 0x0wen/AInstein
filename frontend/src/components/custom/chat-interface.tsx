@@ -1,28 +1,28 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Paperclip, Send } from "lucide-react"
-import { Textarea } from "@/components/ui/textarea"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Paperclip, Send } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ChatInterfaceProps {
-  studyKitId: string
+  studyKitId: string;
 }
 
 export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
-  const [message, setMessage] = useState("")
+  const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
     {
-      role: "assistant",
+      role: 'assistant',
       content:
         "Hello! I'm AInstein, your AI tutor for this Study Kit. How can I help you with Calculus Fundamentals today?",
     },
-  ])
+  ]);
 
   const handleSendMessage = () => {
-    if (!message.trim()) return
+    if (!message.trim()) return;
 
     // Add user message to chat
-    setChatHistory([...chatHistory, { role: "user", content: message }])
+    setChatHistory([...chatHistory, { role: 'user', content: message }]);
 
     // In a real app, you would send the message to an API and get a response
     // For demo purposes, we'll simulate a response after a short delay
@@ -30,15 +30,15 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
       setChatHistory((prev) => [
         ...prev,
         {
-          role: "assistant",
+          role: 'assistant',
           content:
             "I'm here to help with your calculus questions. Could you tell me more specifically what topic you'd like to explore? For example, we could discuss limits, derivatives, or integrals.",
         },
-      ])
-    }, 1000)
+      ]);
+    }, 1000);
 
-    setMessage("")
-  }
+    setMessage('');
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
@@ -69,13 +69,18 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
         <CardContent className="p-4 flex-grow overflow-y-auto">
           <div className="space-y-4">
             {chatHistory.map((chat, index) => (
-              <div key={index} className={`flex ${chat.role === "assistant" ? "justify-start" : "justify-end"}`}>
+              <div
+                key={index}
+                className={`flex ${chat.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
+              >
                 <div
                   className={`max-w-[80%] p-3 rounded-lg ${
-                    chat.role === "assistant" ? "bg-gray-100 text-gray-800" : "bg-primary text-primary-foreground"
+                    chat.role === 'assistant'
+                      ? 'bg-gray-100 text-gray-800'
+                      : 'bg-primary text-primary-foreground'
                   }`}
                 >
-                  {chat.role === "assistant" && (
+                  {chat.role === 'assistant' && (
                     <div className="flex items-center mb-1">
                       <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-2">
                         <svg
@@ -111,9 +116,9 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
               onChange={(e) => setMessage(e.target.value)}
               className="min-h-[80px]"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSendMessage()
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
                 }
               }}
             />
@@ -121,7 +126,11 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
               <Button size="icon" variant="outline">
                 <Paperclip className="h-4 w-4" />
               </Button>
-              <Button size="icon" onClick={handleSendMessage} disabled={!message.trim()}>
+              <Button
+                size="icon"
+                onClick={handleSendMessage}
+                disabled={!message.trim()}
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
@@ -129,6 +138,5 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
         </div>
       </Card>
     </div>
-  )
+  );
 }
-

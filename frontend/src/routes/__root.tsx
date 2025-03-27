@@ -9,16 +9,16 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <React.Fragment>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          <div className="flex flex-col min-h-screen">
-            <div className="flex flex-1">
-              <Sidebar />
-              <main className="flex-1 bg-white">
-                <Outlet />
-              </main>
-            </div>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <div className="flex flex-col min-h-screen">
+          <div className="flex flex-1">
+            <Sidebar />
+            <main className="flex-1 bg-white">
+              <Outlet />
+            </main>
           </div>
-        </ThemeProvider>
+        </div>
+      </ThemeProvider>
     </React.Fragment>
   );
 }

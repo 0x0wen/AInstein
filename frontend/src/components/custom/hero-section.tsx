@@ -6,8 +6,11 @@ export function HeroSection() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         <div className="space-y-6">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground">
-            Meet <span className="text-primary">ai<span className='text-foreground/70'>nstein</span></span>, your personal
-            AI tutor
+            Meet{' '}
+            <span className="text-primary">
+              ai<span className="text-foreground/70">nstein</span>
+            </span>
+            , your personal AI tutor
           </h1>
           <p className="text-xl text-gray-600">
             Organize your learning journey with Study Kits and access powerful
