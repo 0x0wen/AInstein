@@ -12,15 +12,26 @@ import { BookOpen, Image, X } from 'lucide-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useNavigate } from '@tanstack/react-router';
 import api from '@/lib/api';
+import Backgrounds from '@/components/custom/Backgrounds';
 
+export const colorOptions = [
+  { name: 'Blue', value: { hex: '#1E88E5', rgb: [30, 136, 229] } },
+  { name: 'Green', value: { hex: '#7CB342', rgb: [124, 179, 66] } },
+  { name: 'Amber', value: { hex: '#FFA000', rgb: [255, 160, 0] } },
+  { name: 'Red', value: { hex: '#E53935', rgb: [229, 57, 53] } },
+  { name: 'Purple', value: { hex: '#8E24AA', rgb: [142, 36, 170] } },
+  { name: 'Teal', value: { hex: '#00897B', rgb: [0, 137, 123] } },
+];
 
-const colorOptions = [
-  { name: 'Blue', value: '#1E88E5' },
-  { name: 'Green', value: '#7CB342' },
-  { name: 'Amber', value: '#FFA000' },
-  { name: 'Red', value: '#E53935' },
-  { name: 'Purple', value: '#8E24AA' },
-  { name: 'Teal', value: '#00897B' },
+export const backgroundOptions = [
+'LiquidChrome' ,
+'Iridescence' ,
+'Balatro',
+'Dither',
+'Threads',
+'LetterGlitch' ,
+'Particles',
+'Waves',
 ];
 
 export const Route = createFileRoute('/study-kit/create/')({
@@ -29,29 +40,30 @@ export const Route = createFileRoute('/study-kit/create/')({
 
 export default function CreateKitPage() {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
+  // const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
-    name: string
-    description: string
-    coverImage : string | File
-    colorTheme : string
-    progress : {
-      percentage: number
-      lastActivity: Date
-    }
+    name: string;
+    description: string;
+    background: string;
+    // background: string | File;
+    colorTheme: string;
+    progress: {
+      percentage: number;
+      lastActivity: Date;
+    };
   }>({
     name: '',
     description: '',
-    coverImage: '',
-    colorTheme: (colorOptions.find((color)=> color.name === 'Blue'))?.value || '#1E88E5',
+    background: '',
+    colorTheme:
+      colorOptions.find((color) => color.name === 'Blue')?.value.hex ||
+      '#1E88E5',
     progress: {
       percentage: 0,
       lastActivity: new Date(),
     },
   });
-
-  
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -62,46 +74,46 @@ export default function CreateKitPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
 
-    // Create a preview URL for the selected image
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreview(previewUrl);
+  //   // Create a preview URL for the selected image
+  //   const previewUrl = URL.createObjectURL(file);
+  //   setImagePreview(previewUrl);
 
-    // Update form data with the file
-    setFormData((prev) => ({
-      ...prev,
-      coverImage: file,
-    }));
-  };
+  //   // Update form data with the file
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     background: file,
+  //   }));
+  // };
 
-  const handleRemoveImage = () => {
-    setImagePreview(null);
-    setFormData((prev) => ({ ...prev, coverImage: '' }));
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  // const handleRemoveImage = () => {
+  //   setImagePreview(null);
+  //   setFormData((prev) => ({ ...prev, background: '' }));
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = '';
+  //   }
+  // };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Creating study kit:', formData);
 
-    // Create FormData for file upload
     const submitData = new FormData();
     submitData.append('name', formData.name);
     submitData.append('description', formData.description);
     submitData.append('colorTheme', formData.colorTheme);
 
-    // Only append the file if it exists
-    if (formData.coverImage && typeof formData.coverImage !== 'string') {
-      submitData.append('coverImage', formData.coverImage);
-    }
+    // if (formData.background && typeof formData.background !== 'string') {
+    //   submitData.append('background', formData.background);
+    // }
+    submitData.append('background', formData.background);
 
+    console.log('AHOY', submitData);
     api.post('/studykit', submitData);
-    navigate({ to: '/study-kit/create' });
+    navigate({ to: '/' });
   };
 
   return (
@@ -119,7 +131,7 @@ export default function CreateKitPage() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base">
-                  Study Kit Name 
+                  Study Kit Name
                 </Label>
                 <div className="flex items-center">
                   <div className="bg-primary/10 p-2 rounded-l-md border border-r-0 border-input">
@@ -155,22 +167,23 @@ export default function CreateKitPage() {
                 <div className="flex flex-wrap gap-3">
                   {colorOptions.map((color) => (
                     <div
-                      key={color.value}
+                      key={color.value.hex}
                       className={`w-10 h-10 rounded-full cursor-pointer flex items-center justify-center border-2 ${
-                        formData.colorTheme === color.value
+                        formData.colorTheme === color.value.hex
                           ? 'border-black dark:border-white'
                           : 'border-transparent'
                       }`}
-                      style={{ backgroundColor: color.value }}
+                      style={{ backgroundColor: color.value.hex }}
                       onClick={() =>
-                        setFormData((prev) => ({
+                        {console.log(formData);
+                          setFormData((prev) => ({
                           ...prev,
-                          colorTheme: color.value,
-                        }))
+                          colorTheme: color.value.hex,
+                        }))}
                       }
                       title={color.name}
                     >
-                      {formData.colorTheme === color.value && (
+                      {formData.colorTheme === color.value.hex && (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="16"
@@ -191,9 +204,48 @@ export default function CreateKitPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-base">Cover Image (Optional)</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  {imagePreview ? (
+                <Label className="text-base">Background</Label>
+                <div className="flex flex-wrap gap-3">
+                  {backgroundOptions.map((background) => (
+                    <div
+                      key={background}
+                      className={`w-10 h-10 overflow-hidden rounded-full cursor-pointer relative flex items-center justify-center border-2 ${
+                        formData.background === background
+                          ? 'border-black dark:border-white'
+                          : 'border-transparent'
+                      }`}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          background: background,
+                        }))
+                      }
+                      title={background}
+                    >
+                      <Backgrounds colorTheme={colorOptions.find((color)=>formData.colorTheme == color.value.hex)?.value!} type={background}/>
+                      {formData.background === background && (
+                        
+                        <div className='bg-black/70 w-full h-full absolute  top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center'><svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className=' z-50'
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg></div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="border-2 border-dashed border-gray-300 h-[200px] overflow-hidden rounded-lg text-center">
+                <Backgrounds colorTheme={colorOptions.find((color)=>formData.colorTheme == color.value.hex)?.value!} type={formData.background}/>
+                {/* {imagePreview ? (
                     <div className="relative">
                       <img
                         src={imagePreview || '/placeholder.svg'}
@@ -211,9 +263,9 @@ export default function CreateKitPage() {
                         <X className="h-4 w-4" />
                       </Button>
                       <p className="text-sm text-muted-foreground mt-2">
-                        {typeof formData.coverImage === 'object' &&
-                        formData.coverImage instanceof File
-                          ? formData.coverImage.name
+                        {typeof formData.background === 'object' &&
+                        formData.background instanceof File
+                          ? formData.background.name
                           : 'Selected image'}
                       </p>
                     </div>
@@ -234,7 +286,7 @@ export default function CreateKitPage() {
                         <Input
                           ref={fileInputRef}
                           id="picture"
-                          name="coverImage"
+                          name="background"
                           type="file"
                           accept="image/png, image/jpeg, image/jpg, image/webp"
                           className="absolute w-full h-full opacity-0 cursor-pointer"
@@ -242,7 +294,7 @@ export default function CreateKitPage() {
                         />
                       </Button>
                     </>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>

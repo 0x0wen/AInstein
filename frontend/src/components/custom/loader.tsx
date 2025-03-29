@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
-interface CreativeLoaderProps {
+interface OrbitLoaderProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   color?: 'default' | 'primary' | 'secondary' | 'accent';
   text?: string;
@@ -9,13 +9,13 @@ interface CreativeLoaderProps {
   className?: string;
 }
 
-export function CreativeLoader({
+export function OrbitLoader({
   size = 'md',
   color = 'primary',
   text = 'Loading',
   showText = true,
   className,
-}: CreativeLoaderProps) {
+}: OrbitLoaderProps) {
   const [dots, setDots] = useState<string>('.');
   const [particles, setParticles] = useState<
     Array<{ id: number; delay: number; scale: number }>

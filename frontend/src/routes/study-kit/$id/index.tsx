@@ -32,8 +32,10 @@ import { createFileRoute } from '@tanstack/react-router';
 import { data as dummy } from '@/dummy';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { CreativeLoader } from '@/components/custom/loader';
+import { OrbitLoader } from '@/components/custom/loader';
 import { Skeleton } from '@/components/ui/skeleton';
+import { colorOptions } from '../create';
+import Backgrounds from '@/components/custom/Backgrounds';
 
 export const Route = createFileRoute('/study-kit/$id/')({
   component: StudyKitPage,
@@ -56,29 +58,46 @@ export default function StudyKitPage() {
   if (!studykit) {
     return <div>Study Kit not found</div>;
   }
+
+  const colorTheme = colorOptions.find(
+    (color) => color.value.hex == studykit.colorTheme,
+  )?.value;
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {studykit.name}
-            </h1>
-            <p className="text-muted-foreground mt-1">{studykit.description}</p>
+        <div className="relative rounded-lg overflow-hidden mb-6">
+          <div className="aspect-[4/1] w-full overflow-hidden">
+            <Backgrounds colorTheme={colorTheme!} type={studykit.background}/>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline">Edit Kit</Button>
-            <Button>Add Resource</Button>
+          <div className="absolute bottom-0 left-0  p-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-background">
+                {studykit.name}
+              </h1>
+              <p className="text-background/70 mt-1">{studykit.description}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline">Edit Kit</Button>
+              <Button
+                style={{
+                  backgroundColor: colorTheme?.hex,
+                }}
+              >
+                Add Resource
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main content area - 3/4 width */}
+
         <div className="lg:col-span-3 ">
-          {isLoading || isRefetching ? (
+          {isLoading || isRefetching || isPending ? (
             <div className="w-full h-full flex justify-center items-center">
-              <CreativeLoader size="lg" color="primary" showText={false} />
+              <OrbitLoader size="lg" color="primary" showText={false} />
             </div>
           ) : (
             <div className="space-y-8">
@@ -86,12 +105,21 @@ export default function StudyKitPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold flex items-center">
-                    <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+                    <MessageSquare
+                      style={{ color: colorTheme?.hex }}
+                      className="h-5 w-5 mr-2"
+                    />
                     Conversations
                   </h2>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button>New Chat</Button>
+                      <Button
+                        style={{
+                          backgroundColor: colorTheme?.hex,
+                        }}
+                      >
+                        New Chat
+                      </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl h-[80vh]">
                       <DialogHeader>
@@ -133,12 +161,21 @@ export default function StudyKitPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold flex items-center">
-                    <Video className="h-5 w-5 mr-2 text-primary" />
+                    <Video
+                      style={{ color: colorTheme?.hex }}
+                      className="h-5 w-5 mr-2"
+                    />
                     Explanatory Videos
                   </h2>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button>Create Video</Button>
+                      <Button
+                        style={{
+                          backgroundColor: colorTheme?.hex,
+                        }}
+                      >
+                        Create Video
+                      </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl h-[80vh]">
                       <DialogHeader>
@@ -207,12 +244,21 @@ export default function StudyKitPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold flex items-center">
-                    <BookOpen className="h-5 w-5 mr-2 text-primary" />
+                    <BookOpen
+                      style={{ color: colorTheme?.hex }}
+                      className="h-5 w-5 mr-2"
+                    />
                     Flash Cards
                   </h2>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button>Create Deck</Button>
+                      <Button
+                        style={{
+                          backgroundColor: colorTheme?.hex,
+                        }}
+                      >
+                        Create Deck
+                      </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl h-[80vh]">
                       <DialogHeader>
@@ -287,12 +333,21 @@ export default function StudyKitPage() {
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold flex items-center">
-                    <FileQuestion className="h-5 w-5 mr-2 text-primary" />
+                    <FileQuestion
+                      style={{ color: colorTheme?.hex }}
+                      className="h-5 w-5 mr-2"
+                    />
                     Quizzes
                   </h2>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button>Create Quiz</Button>
+                      <Button
+                        style={{
+                          backgroundColor: colorTheme?.hex,
+                        }}
+                      >
+                        Create Quiz
+                      </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl h-[80vh]">
                       <DialogHeader>

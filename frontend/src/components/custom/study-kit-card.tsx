@@ -156,9 +156,7 @@ export function StudyKitCard({ studyKit }: StudyKitCardProps) {
                     : undefined,
                   color: isHovered ? studyKit.colorTheme : undefined,
                 }}
-              >
-                
-              </span>
+              ></span>
               <motion.div
                 animate={{ x: isHovered ? 0 : -10, opacity: isHovered ? 1 : 0 }}
                 transition={{ duration: 0.2 }}

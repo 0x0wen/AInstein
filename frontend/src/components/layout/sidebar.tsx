@@ -39,9 +39,9 @@ export function Sidebar() {
       });
     },
   });
-  const studykitList = data
-  if(isLoading || isPending){
-    return <p>Loading...</p>
+  const studykitList = data;
+  if (isLoading || isPending) {
+    return <p>Loading...</p>;
   }
   return (
     <aside
@@ -160,8 +160,8 @@ export function Sidebar() {
                 {!collapsed && <span className="truncate">{kit.name}</span>}
               </Link>
             ))}
-           {studykitList &&
-              studykitList?.map((kit:StudyKit) => (
+            {studykitList &&
+              studykitList?.map((kit: StudyKit) => (
                 <Link
                   key={kit._id}
                   to={'/study-kit/$id'}
