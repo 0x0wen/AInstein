@@ -6,7 +6,7 @@ export interface IStudykit {
   name: string;
   description: string;
   userId: mongoose.Types.ObjectId | IUser;
-  coverImage: string;
+  background: File | string;
   colorTheme: string;
   progress: {
     percentage: number;
@@ -23,11 +23,19 @@ const StudykitSchema: Schema<IStudykitDocument> = new Schema(
     name: { type: String, required: true },
     description: { type: String, default: "" },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    coverImage: { type: String, default: "" },
+    background: { type: String, default: "" },
     colorTheme: { type: String, default: "#1E88E5" }, // Default to primary blue from spec
     progress: {
       percentage: { type: Number, default: 0 },
       lastActivity: { type: Date, default: Date.now }
+    },
+    createdAt: { 
+      type: Date, 
+      default: Date.now 
+    },
+    updatedAt: { 
+      type: Date, 
+      default: Date.now 
     }
   },
   { timestamps: true }
@@ -39,8 +47,11 @@ StudykitSchema.index({ userId: 1, name: 1 });
 
 export const StudyKitRequestSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  description: z.string().optional(),
-  coverImage: z.string().optional(),
+  description: z.string().optional().default(""),
+  background:  z.union([
+    z.instanceof(File), 
+    z.string(),
+  ]).optional(),
   colorTheme: z.string().optional().default("#1E88E5"),
   progress: z.object({
     percentage: z.number().min(0).max(100).optional().default(0),
@@ -48,7 +59,18 @@ export const StudyKitRequestSchema = z.object({
   }).optional()
 });
 
-export const StudyKitResponseSchema = StudyKitRequestSchema.extend({
+export const StudyKitResponseSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  description: z.string().default(""),
+  background:  z.union([
+    z.instanceof(File), 
+    z.string(),
+  ]),
+  colorTheme: z.string().default("#1E88E5"),
+  progress: z.object({
+    percentage: z.number().min(0).max(100).default(0),
+    lastActivity: z.coerce.date()
+  }),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date()
 });

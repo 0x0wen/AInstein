@@ -1,11 +1,15 @@
 import { Studykit, IStudykit } from "@/models/studykit.model";
 import mongoose from "mongoose";
 import { IUser } from "@/models/user.model";
+
 export async function createStudykit(
 	studykitData: IStudykit,
 ): Promise<IStudykit> {
+	console.log("AHOY")
 	const studykit = new Studykit(studykitData);
+	console.log("AHOY", JSON.stringify(studykit))
 	await studykit.save();
+	console.log("AHOY", studykit.toJSON())
 	return studykit.toJSON();
 }
 

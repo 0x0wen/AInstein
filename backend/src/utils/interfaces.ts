@@ -24,7 +24,7 @@ export interface StudyKit {
 	userId: ObjectId;
 	subject?: string;
 	tags?: string[];
-	coverImage?: string;
+	background?: string;
 	colorTheme?: string;
 	isPublic?: boolean;
 	progress?: {

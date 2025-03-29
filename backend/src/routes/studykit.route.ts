@@ -50,11 +50,6 @@ const getStudykitRoute = studykit_route.openapi(
 	createRoute({
 		method: "get",
 		path: "/:studykitId",
-		request: {
-			params: z.object({
-				username: z.string(),
-			}),
-		},
 		responses: {
 			200: {
 				content: {

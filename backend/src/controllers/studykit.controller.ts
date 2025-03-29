@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import * as StudykitService from "@/services/studykit.service";
-import { IStudykit } from "@/models/studykit.model";
+import { IStudykit, StudyKitRequestSchema } from "@/models/studykit.model";
 import mongoose from "mongoose";
 export class StudykitController {
 	constructor() {
