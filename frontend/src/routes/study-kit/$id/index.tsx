@@ -67,7 +67,7 @@ export default function StudyKitPage() {
       <div className="mb-8">
         <div className="relative rounded-lg overflow-hidden mb-6">
           <div className="aspect-[4/1] w-full overflow-hidden">
-            <Backgrounds colorTheme={colorTheme!} type={studykit.background}/>
+            <Backgrounds colorTheme={colorTheme!} type={studykit.background} small={false}/>
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
           </div>
           <div className="absolute bottom-0 left-0  p-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">

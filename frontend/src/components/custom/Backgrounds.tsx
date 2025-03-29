@@ -8,8 +8,8 @@ import Particles from '@/blocks/Backgrounds/Particles/Particles';
 import Waves from '@/blocks/Backgrounds/Waves/Waves';
 
 export default function Backgrounds({
-  colorTheme, type
-}: { colorTheme: { hex: string; rgb: number[] }, type:string }) {
+  colorTheme, type, small = true
+}: { colorTheme: { hex: string; rgb: number[] }, type:string, small?: boolean }) {
   function getBackground(type: string) {
     switch (type) {
       case 'LiquidChrome':
@@ -102,7 +102,7 @@ export default function Backgrounds({
     <div
       style={{
         width: '100%',
-        height: ['LiquidChrome','Balatro','Dither'].includes(type) ? '600px' : '200px',
+        height: small ? ['LiquidChrome','Balatro','Dither'].includes(type) ? '600px' : '200px' : '600px',
         position: 'relative',
         objectPosition: 'center',
       }}
