@@ -23,14 +23,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useParams } from '@tanstack/react-router';
-import { data as dummy, StudyKit } from '@/dummy';
+import { data as dummy, type StudyKit } from '@/dummy';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { id } = useParams({ strict: false });
-  const { isPending, isLoading, error, data } = useQuery({
+  const { isPending, isLoading, data } = useQuery({
     queryKey: ['Studykit List'],
     queryFn: async () => {
       return await api.get('/studykit').then((res) => {
@@ -58,6 +58,7 @@ export function Sidebar() {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
+                <title>Logo</title>
                 <path
                   d="M141.5 208L150.5 198"
                   stroke="white"
@@ -151,7 +152,7 @@ export function Sidebar() {
                 to={'/study-kit/$id'}
                 params={{ id: kit._id }}
                 className={`flex items-center p-2 rounded-md ${
-                  kit._id == id
+                  kit._id === id
                     ? 'bg-primary/10 text-primary'
                     : 'text-gray-700 hover:bg-gray-100'
                 } mb-1 transition-colors`}
@@ -160,22 +161,21 @@ export function Sidebar() {
                 {!collapsed && <span className="truncate">{kit.name}</span>}
               </Link>
             ))}
-            {studykitList &&
-              studykitList?.map((kit: StudyKit) => (
-                <Link
-                  key={kit._id}
-                  to={'/study-kit/$id'}
-                  params={{ id: kit._id }}
-                  className={`flex items-center p-2 rounded-md ${
-                    kit._id == id
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  } mb-1 transition-colors`}
-                >
-                  <BookOpen className="h-5 w-5 mr-3" />
-                  {!collapsed && <span className="truncate">{kit.name}</span>}
-                </Link>
-              ))}
+            {/* {studykitList?.map((kit: StudyKit) => ( */}
+            {/*   <Link */}
+            {/*     key={kit._id} */}
+            {/*     to={'/study-kit/$id'} */}
+            {/*     params={{ id: kit._id }} */}
+            {/*     className={`flex items-center p-2 rounded-md ${ */}
+            {/*       kit._id === id */}
+            {/*         ? 'bg-primary/10 text-primary' */}
+            {/*         : 'text-gray-700 hover:bg-gray-100' */}
+            {/*     } mb-1 transition-colors`} */}
+            {/*   > */}
+            {/*     <BookOpen className="h-5 w-5 mr-3" /> */}
+            {/*     {!collapsed && <span className="truncate">{kit.name}</span>} */}
+            {/*   </Link> */}
+            {/* ))} */}
             <Link
               to="/study-kit/create"
               className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-md mb-1 transition-colors"
@@ -192,6 +192,7 @@ export function Sidebar() {
                 strokeLinejoin="round"
                 className="mr-3"
               >
+                <title>Logo</title>
                 <path d="M5 12h14" />
                 <path d="M12 5v14" />
               </svg>

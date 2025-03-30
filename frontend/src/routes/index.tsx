@@ -1,10 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
 import { StudyKitCard } from '../components/custom/study-kit-card';
-import { HeroSection } from '../components/custom/hero-section';
-import { GettingStartedGuide } from '../components/custom/getting-started-guide';
 import { Link } from '@tanstack/react-router';
-import { data as dummy, StudyKit } from '@/dummy';
+import { data as dummy, type StudyKit } from '@/dummy';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
@@ -41,7 +38,7 @@ export default function HomePage() {
       }
     };
   }, []);
-  const { isPending, error, data } = useQuery({
+  const { data } = useQuery({
     queryKey: ['Studykit List'],
     queryFn: async () => {
       return await api.get('/studykit').then((res) => {
@@ -64,10 +61,9 @@ export default function HomePage() {
           {dummy.studyKits.map((kit) => (
             <StudyKitCard key={kit._id} studyKit={kit} />
           ))}
-          {data &&
-            data?.map((kit: StudyKit) => (
-              <StudyKitCard key={kit._id} studyKit={kit} />
-            ))}
+          {data?.map((kit: StudyKit) => (
+            <StudyKitCard key={kit._id} studyKit={kit} />
+          ))}
           <Link to="/study-kit/create" className="block">
             <motion.div
               ref={cardRef}
@@ -97,7 +93,8 @@ export default function HomePage() {
                   animate={{ opacity: isHovered ? 0.05 : 0 }}
                   transition={{ duration: 0.3 }}
                   style={{
-                    backgroundImage: `radial-gradient(circle at 50% 50%, hsl(var(--primary)) 10%, transparent 60%)`,
+                    backgroundImage:
+                      'radial-gradient(circle at 50% 50%, hsl(var(--primary)) 10%, transparent 60%)',
                     backgroundSize: '100px 100px',
                     backgroundPosition: 'center',
                   }}
