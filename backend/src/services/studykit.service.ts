@@ -1,20 +1,22 @@
-import { Studykit, IStudykit } from "@/models/studykit.model";
-import mongoose from "mongoose";
-import { IUser } from "@/models/user.model";
+import { Studykit, type IStudykit } from "@/models/studykit.model";
+import type mongoose from "mongoose";
+import type { IUser } from "@/models/user.model";
 
 export async function createStudykit(
 	studykitData: IStudykit,
 ): Promise<IStudykit> {
-	console.log("AHOY")
+	console.log("AHOY");
 	const studykit = new Studykit(studykitData);
-	console.log("AHOY", JSON.stringify(studykit))
+	console.log("AHOY", JSON.stringify(studykit));
 	await studykit.save();
-	console.log("AHOY", studykit.toJSON())
+	console.log("AHOY", studykit.toJSON());
 	return studykit.toJSON();
 }
 
-export async function fetchAllStudykits(userId: mongoose.Types.ObjectId | IUser): Promise<IStudykit[]> {
-	return await Studykit.find({userId: userId});
+export async function fetchAllStudykits(
+	userId: mongoose.Types.ObjectId | IUser,
+): Promise<IStudykit[]> {
+	return await Studykit.find({ userId: userId });
 }
 
 export async function fetchStudykitById(

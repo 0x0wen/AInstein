@@ -1,5 +1,5 @@
 import * as UserService from "@/services/user.service";
-import { IUser } from "@/models/user.model";
+import type { IUser } from "@/models/user.model";
 
 export class UserController {
 	constructor() {

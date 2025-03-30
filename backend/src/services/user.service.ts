@@ -1,5 +1,5 @@
-import { User, IUser } from "@/models/user.model";
-import { JWTUtil } from "@/utils/jwt";
+import { User, type IUser } from "@/models/user.model";
+import JWTUtil from "@/utils/jwt";
 import { compare, hash } from "bcrypt";
 
 export async function createUser(
@@ -27,7 +27,7 @@ export async function createUser(
 		});
 		return { user: user.toJSON(), token };
 	} catch (error) {
-		throw new Error("Error creating user:" + error);
+		throw new Error(`Error creating user:${error}`);
 	}
 }
 

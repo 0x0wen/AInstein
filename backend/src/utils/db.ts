@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 
 export async function connectToDatabase(URI: string) {
 	if (!URI) {
@@ -18,3 +19,7 @@ export async function connectToDatabase(URI: string) {
 		throw error;
 	}
 }
+
+export const client = new MongoClient(
+	process.env.MONGODB_URI || "mongodb://localhost/ainstein-test",
+);

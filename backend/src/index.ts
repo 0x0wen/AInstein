@@ -1,19 +1,38 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
-import chat from "@/routes/chat.route";
-import video from "@/routes/video.route";
 import user from "@/routes/user.route";
 import studykit from "@/routes/studykit.route";
-import { serve } from "bun";
 import { connectToDatabase } from "./utils/db";
-const api = new OpenAPIHono().basePath("/api");
+import { auth } from "@/utils/auth";
+import type { Context } from "hono";
 
 const MONGODB_URI =
-	Bun.env.BUN_ENV == "development"
+	Bun.env.BUN_ENV === "development"
 		? "mongodb://localhost/ainstein"
 		: Bun.env.MONGODB_URI;
+
+// biome-ignore lint/style/noNonNullAssertion: <explanation>
 await connectToDatabase(MONGODB_URI!);
+
+const api = new OpenAPIHono().basePath("/api");
+
+api.use(logger());
+api.use(
+	"*",
+	cors({
+		origin:
+			Bun.env.BUN_ENV === "development"
+				? "http://localhost:5173"
+				: // biome-ignore lint/style/noNonNullAssertion: <explanation>
+					Bun.env.CLIENT_URL!,
+		allowHeaders: ["Content-Type", "Authorization"],
+		allowMethods: ["POST", "GET", "OPTIONS"],
+		exposeHeaders: ["Content-Length"],
+		maxAge: 600,
+		credentials: true,
+	}),
+);
 
 api.doc("/doc", {
 	openapi: "3.0.0",
@@ -28,8 +47,6 @@ api.onError((err, c) => {
 	return c.json({ success: false, message: err.message }, 500);
 });
 
-api.use(logger());
-api.use(cors());
 api.notFound((c) => {
 	return c.json(
 		{
@@ -37,6 +54,10 @@ api.notFound((c) => {
 		},
 		404,
 	);
+});
+
+api.on(["POST", "GET"], "/auth/*", (c: Context) => {
+	return auth.handler(c.req.raw);
 });
 
 api.get("/", (c) => {
@@ -52,10 +73,7 @@ api.route("/user", user);
 
 const port = Bun.env.PORT || 3000;
 
-serve({
-	fetch: api.fetch,
+export default {
 	port: port,
-});
-
-console.log(`Server is running on http://localhost:${port}`);
-export default api;
+	fetch: api.fetch,
+};

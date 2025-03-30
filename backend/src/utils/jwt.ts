@@ -7,7 +7,7 @@ export interface JWTPayload {
 	exp?: number;
 }
 
-export class JWTUtil {
+export default class JWTUtil {
 	static async generateToken(
 		payload: Omit<JWTPayload, "iat" | "exp">,
 	): Promise<string> {
