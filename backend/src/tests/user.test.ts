@@ -28,7 +28,7 @@ describe("User API Routes", () => {
 	beforeAll(async () => {
 		console.log("Starting User API tests...");
 		await connectToDatabase(
-			process.env.MONGODB_TEST_URI || "mongodb://localhost/ainstein",
+			Bun.env.MONGODB_TEST_URI || "mongodb://localhost/ainstein",
 		);
 	});
 

@@ -10,7 +10,7 @@ export async function createUser(
 		throw new Error("User already exists");
 	}
 	try {
-		if (!process.env.JWT_SECRET) {
+		if (!Bun.env.JWT_SECRET) {
 			throw new Error("JWT secret is required to generate token");
 		}
 
