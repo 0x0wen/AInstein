@@ -2,11 +2,8 @@ import type { Context } from "hono";
 import * as StudykitService from "@/services/studykit.service";
 import type { IStudykit } from "@/models/studykit.model";
 import mongoose from "mongoose";
-export class StudykitController {
-	constructor() {
-		this.fetchAllStudyKit = this.fetchAllStudyKit.bind(this);
-	}
 
+export class StudykitController {
 	async fetchAllStudyKit(c: Context) {
 		try {
 			const result = await StudykitService.fetchAllStudykits(
@@ -57,18 +54,13 @@ export class StudykitController {
 				userId: new mongoose.Types.ObjectId("67e2695d8f4383738ccce306"),
 			});
 			return c.json(
-				{
-					success: true,
-					message: "Study kit created!",
-					body: { studykit: result },
-				},
+				result,
 				200,
 			);
 		} catch (error) {
 			if (error instanceof Error) {
 				return c.json(
 					{
-						success: false,
 						message: "Study kit creation failed!",
 						error: error.message,
 					},

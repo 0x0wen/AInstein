@@ -5,11 +5,8 @@ import type { IUser } from "@/models/user.model";
 export async function createStudykit(
 	studykitData: IStudykit,
 ): Promise<IStudykit> {
-	console.log("AHOY");
 	const studykit = new Studykit(studykitData);
-	console.log("AHOY", JSON.stringify(studykit));
 	await studykit.save();
-	console.log("AHOY", studykit.toJSON());
 	return studykit.toJSON();
 }
 

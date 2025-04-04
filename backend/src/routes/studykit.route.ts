@@ -1,15 +1,14 @@
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { StudykitController } from "@/controllers/studykit.controller";
-import { StudyKitRequestSchema, StudyKitResponseSchema } from "@/models/studykit.model";
+import {
+	StudyKitRequestSchema,
+	StudyKitResponseSchema,
+} from "@/models/studykit.model";
+import { errorResponseSchema } from "@/utils/types";
 
 const studykit_route = new OpenAPIHono();
 const studykit_controller = new StudykitController();
-
-const errorResponseSchema = z.object({
-	message: z.string(),
-	error: z.string().optional(),
-});
 
 const getAllStudykitRoute = studykit_route.openapi(
 	createRoute({
@@ -170,7 +169,7 @@ const createStudykitRoute = studykit_route.openapi(
 			},
 		},
 		responses: {
-			201: {
+			200: {
 				content: {
 					"application/json": {
 						schema: StudyKitResponseSchema,
@@ -178,7 +177,7 @@ const createStudykitRoute = studykit_route.openapi(
 				},
 				description: "User created successfully",
 			},
-			400: {
+			500: {
 				content: {
 					"application/json": {
 						schema: errorResponseSchema,
