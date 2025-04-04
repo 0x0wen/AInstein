@@ -5,6 +5,7 @@ import user from "@/routes/user.route";
 import studykit from "@/routes/studykit.route";
 import { connectToDatabase } from "./utils/db";
 import { auth } from "@/utils/auth";
+import video from "./routes/video.route";
 import type { Context } from "hono";
 
 const MONGODB_URI =
@@ -67,7 +68,7 @@ api.get("/", (c) => {
 api.route("/studykit", studykit);
 api.route("/user", user);
 // api.route("/chat", chat);
-// api.route("/video", chat);
+api.route("/video", video);
 // api.route("/flashcard", chat);
 // api.route("/quiz", chat);
 
