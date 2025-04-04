@@ -21,5 +21,23 @@ export async function connectToDatabase(URI: string) {
 }
 
 export const client = new MongoClient(
-	process.env.MONGODB_URI || "mongodb://localhost/ainstein-test",
-);
+	Bun.env.MONGODB_URI || "mongodb://localhost/ainstein-test",
+) as MongoClient;
+
+const videoCollection = client.db().collection("videos");
+const studykitCollection = client.db().collection("studykits");
+const userCollection = client.db().collection("users");
+const quizCollection = client.db().collection("quizzes");
+const flashcardCollection = client.db().collection("flashcards");
+const resourceCollection = client.db().collection("resources");
+const chatCollection = client.db().collection("chats");
+
+export {
+	videoCollection,
+	studykitCollection,
+	userCollection,
+	quizCollection,
+	flashcardCollection,
+	resourceCollection,
+	chatCollection,
+};
