@@ -10,7 +10,7 @@ import { videoCollection } from "@/utils/db";
 import lambda from "@/utils/lambda";
 import { InvocationType } from "@aws-sdk/client-lambda";
 import logger from "@/utils/logger"; // Assuming you have a logger utility
-import { extractPythonCode } from "@/utils/helpers";
+import { extractPythonCode, SYSTEM_PROMPT } from "@/utils/helpers";
 
 export async function createVideo(
 	prompt: string,
@@ -38,19 +38,6 @@ export async function createVideo(
 		logger.debug(`Creating working directory: ${workDir}`, { workDir, requestId });
 		execSync(`mkdir -p ${workDir}`);
 
-		const systemPrompt = `You are a Python code generator specializing in Manim animations for educational content.
-    Generate Python code for Manim that follows these requirements:
-    1. NO external files or URLs - use only built-in resources
-    2. Match parameter types exactly for all method arguments
-    3. CRITICAL: Clear previous elements before adding new ones to prevent overlapping frames
-    4. Incorporate real-world visualizations when helpful for understanding
-    5. Add manim_voiceover that naturally explains concepts without reading all text verbatim
-    6. Only use attributes that actually exist on classes
-    7. Write minimal, compact code without comments or excessive whitespace
-    8. Make sure the text always comes out on top and not overlapped by any graphic
-
-    Generate ONLY the Python code without any explanations or markdown formatting.`;
-
 		logger.info(`Calling OpenAI to generate animation code`, { 
 			userId, 
 			requestId, 
@@ -58,26 +45,109 @@ export async function createVideo(
 			promptLength: prompt.length 
 		});
 		
-		const startTime = Date.now();
-		const completion = await oaiClient.chat.completions.create({
-			model: "gpt-4-turbo",
-			messages: [
-				{ role: "system", content: systemPrompt },
-				{ role: "user", content: prompt },
-			],
-			temperature: 0.2,
-		});
-		const completionTime = Date.now() - startTime;
+		// const startTime = Date.now();
+		// const completion = await oaiClient.chat.completions.create({
+		// 	model: "gpt-4-turbo",
+		// 	messages: [
+		// 		{ role: "system", content: SYSTEM_PROMPT },
+		// 		{ role: "user", content: prompt },
+		// 	],
+		// 	temperature: 0.2,
+		// });
+		// const completionTime = Date.now() - startTime;
 		
-		logger.info(`Received code from OpenAI`, { 
-			userId, 
-			requestId, 
-			completionTimeMs: completionTime,
-			responseTokens: completion.usage?.completion_tokens,
-			totalTokens: completion.usage?.total_tokens
-		});
+		// logger.info(`Received code from OpenAI`, { 
+		// 	userId, 
+		// 	requestId, 
+		// 	completionTimeMs: completionTime,
+		// 	responseTokens: completion.usage?.completion_tokens,
+		// 	totalTokens: completion.usage?.total_tokens
+		// });
 
-		const generatedCode = extractPythonCode(completion.choices[0].message.content as string);
+		// const generatedCode = extractPythonCode(completion.choices[0].message.content as string);
+		const generatedCode =`
+from manim import *
+from manim_voiceover import VoiceoverScene
+from manim_voiceover.services.openai import OpenAIService
+
+class HidrokarbonScene(VoiceoverScene):
+    def construct(self):
+        self.set_speech_service(OpenAIService(voice='sage', model='gpt-4o-mini-tts', transcription_model=None))
+
+        title = Text("Konsep Dasar Hidrokarbon", font_size=60, color=YELLOW)
+        with self.voiceover("Halo! Hari ini kita akan membahas konsep dasar hidrokarbon dan struktur-strukturnya.") as tracker:
+            self.play(Write(title))
+        self.wait()
+        self.clear()
+
+        hidrokarbon = Text("Hidrokarbon = Hidrogen + Karbon", font_size=48)
+        with self.voiceover("Hidrokarbon adalah senyawa yang hanya tersusun dari atom karbon dan hidrogen.") as tracker:
+            self.play(Write(hidrokarbon))
+        self.wait()
+
+        self.clear()
+        jenis = Text("Dua Jenis Utama Hidrokarbon", font_size=52)
+        alifatik = Text("1. Alifatik", font_size=42).next_to(jenis, DOWN).shift(LEFT*3)
+        aromatik = Text("2. Aromatik", font_size=42).next_to(jenis, DOWN).shift(RIGHT*3)
+        with self.voiceover("Secara umum, hidrokarbon dibagi menjadi dua jenis: alifatik dan aromatik.") as tracker:
+            self.play(Write(jenis), FadeIn(alifatik), FadeIn(aromatik))
+        self.wait()
+
+        self.clear()
+        alkan = Text("Alkana: Rantai tunggal (C-C)", font_size=42).to_edge(UP)
+        rantai = VGroup(
+            Dot(), Line(LEFT, RIGHT).scale(0.6), Dot(), Line(LEFT, RIGHT).scale(0.6),
+            Dot(), Line(LEFT, RIGHT).scale(0.6), Dot()
+        ).arrange(RIGHT).scale(1.2)
+        rantai.set_color(GREEN)
+        with self.voiceover("Hidrokarbon alifatik terdiri dari alkana, yaitu rantai karbon tunggal seperti ini.") as tracker:
+            self.play(Write(alkan), Create(rantai))
+        self.wait()
+
+        self.clear()
+        alken = Text("Alkena: Ikatan rangkap dua (C=C)", font_size=42).to_edge(UP)
+        double_bond = VGroup(Dot(), Line(LEFT, RIGHT).scale(0.6), Line(LEFT, RIGHT).scale(0.6).shift(DOWN*0.1), Dot())
+        double_bond.set_color(ORANGE).arrange(RIGHT).scale(1.2)
+        with self.voiceover("Alkena memiliki ikatan rangkap dua antar karbon.") as tracker:
+            self.play(Write(alken), Create(double_bond))
+        self.wait()
+
+        self.clear()
+        alkuna = Text("Alkuna: Ikatan rangkap tiga (C≡C)", font_size=42).to_edge(UP)
+        triple_bond = VGroup(Dot(), 
+                             Line(LEFT, RIGHT).scale(0.6),
+                             Line(LEFT, RIGHT).scale(0.6).shift(UP*0.1),
+                             Line(LEFT, RIGHT).scale(0.6).shift(DOWN*0.1),
+                             Dot()).arrange(RIGHT).scale(1.2)
+        triple_bond.set_color(RED)
+        with self.voiceover("Sedangkan alkuna memiliki ikatan rangkap tiga.") as tracker:
+            self.play(Write(alkuna), Create(triple_bond))
+        self.wait()
+
+        self.clear()
+        benzena = Text("Aromatik: Contoh Benzena", font_size=42).to_edge(UP)
+        cincin = Circle(radius=1.2).set_color(BLUE)
+        garis_dalam = VGroup(
+            Line([-1, 0.6, 0], [1, 0.6, 0]),
+            Line([0.5, -1.1, 0], [-0.5, -1.1, 0]),
+            Line([-1, 0.6, 0], [0.5, -1.1, 0])
+        ).set_stroke(width=3)
+        with self.voiceover("Hidrokarbon aromatik seperti benzena memiliki struktur cincin yang stabil.") as tracker:
+            self.play(Write(benzena), Create(cincin), Create(garis_dalam))
+        self.wait()
+
+        self.clear()
+        summary = VGroup(
+            Text("Jenis Hidrokarbon:", font_size=48, color=YELLOW),
+            Text("1. Alkana – Ikatan tunggal", font_size=38),
+            Text("2. Alkena – Ikatan rangkap dua", font_size=38),
+            Text("3. Alkuna – Ikatan rangkap tiga", font_size=38),
+            Text("4. Aromatik – Cincin benzena", font_size=38)
+        ).arrange(DOWN, aligned_edge=LEFT).to_edge(UP)
+        with self.voiceover("Kesimpulannya, struktur hidrokarbon dibedakan berdasarkan jenis ikatan antar atom karbon.") as tracker:
+            self.play(FadeIn(summary))
+        self.wait(tracker.duration + 1)`
+
 		console.debug(`Generated code: ${generatedCode}`, {
 			userId,
 			requestId,
