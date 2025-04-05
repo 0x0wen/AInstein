@@ -10,6 +10,7 @@ import { videoCollection } from "@/utils/db";
 import lambda from "@/utils/lambda";
 import { InvocationType } from "@aws-sdk/client-lambda";
 import logger from "@/utils/logger"; // Assuming you have a logger utility
+import { extractPythonCode } from "@/utils/helpers";
 
 export async function createVideo(
 	prompt: string,
@@ -58,32 +59,38 @@ export async function createVideo(
 		});
 		
 		const startTime = Date.now();
-		// const completion = await oaiClient.chat.completions.create({
-		// 	model: "gpt-4-turbo",
-		// 	messages: [
-		// 		{ role: "system", content: systemPrompt },
-		// 		{ role: "user", content: prompt },
-		// 	],
-		// 	temperature: 0.2,
-		// });
-		// const completionTime = Date.now() - startTime;
+		const completion = await oaiClient.chat.completions.create({
+			model: "gpt-4-turbo",
+			messages: [
+				{ role: "system", content: systemPrompt },
+				{ role: "user", content: prompt },
+			],
+			temperature: 0.2,
+		});
+		const completionTime = Date.now() - startTime;
 		
-		// logger.info(`Received code from OpenAI`, { 
-		// 	userId, 
-		// 	requestId, 
-		// 	completionTimeMs: completionTime,
-		// 	responseTokens: completion.usage?.completion_tokens,
-		// 	totalTokens: completion.usage?.total_tokens
-		// });
+		logger.info(`Received code from OpenAI`, { 
+			userId, 
+			requestId, 
+			completionTimeMs: completionTime,
+			responseTokens: completion.usage?.completion_tokens,
+			totalTokens: completion.usage?.total_tokens
+		});
 
-		// const generatedCode = completion.choices[0].message.content;
-        const generatedCode = `from manim import *
+		const generatedCode = extractPythonCode(completion.choices[0].message.content as string);
+		console.debug(`Generated code: ${generatedCode}`, {
+			userId,
+			requestId,
+			code: generatedCode
+		});
 
-class CreateCircle(Scene):
-    def construct(self):
-        circle = Circle()  
-        circle.set_fill(PINK, opacity=0.5) 
-        self.play(Create(circle))`;
+//         const generatedCode = `from manim import *
+
+// class CreateCircle(Scene):
+//     def construct(self):
+//         circle = Circle()  
+//         circle.set_fill(PINK, opacity=0.5) 
+//         self.play(Create(circle))`;
         logger.debug(`Generated code length: ${generatedCode.length} characters`, {
             userId,
             requestId,
@@ -118,7 +125,6 @@ class CreateCircle(Scene):
 		};
 		
 		const lambdaResponse = await lambda.invoke(params);
-        console.log(lambdaResponse)
 		const lambdaTime = Date.now() - lambdaStartTime;
 		
 		logger.info(`Lambda function completed`, { 
