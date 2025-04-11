@@ -16,7 +16,12 @@ const MONGODB_URI =
 // biome-ignore lint/style/noNonNullAssertion: <explanation>
 await connectToDatabase(MONGODB_URI!);
 
-const api = new OpenAPIHono().basePath("/api");
+const api = new OpenAPIHono<{
+	Variables: {
+		user: typeof auth.$Infer.Session.user | null;
+		session: typeof auth.$Infer.Session.session | null;
+	};
+}>().basePath("/api");
 
 api.use(logger());
 api.use(
@@ -34,6 +39,21 @@ api.use(
 		credentials: true,
 	}),
 );
+
+// Auth Middleware
+api.use("*", async (c, next) => {
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+	if (!session) {
+		c.set("user", null);
+		c.set("session", null);
+		return next();
+	}
+
+	c.set("user", session.user);
+	c.set("session", session.session);
+	return next();
+});
 
 api.doc("/doc", {
 	openapi: "3.0.0",

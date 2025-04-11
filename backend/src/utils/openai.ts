@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 
-const oaiClient = new OpenAI({
+const openai = new OpenAI({
 	apiKey: Bun.env.OPENAI_API_KEY,
 });
 
-export default oaiClient;
+export default openai;

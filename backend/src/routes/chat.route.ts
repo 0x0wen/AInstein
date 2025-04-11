@@ -1,11 +1,8 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { ChatController } from "@/controllers/chat.controller";
-import { ChatService } from "@/services/chat.service";
-import { Chat } from "@/utils/db";
 
 const chat = new OpenAPIHono();
-const chat_service = new ChatService(Chat);
-const chat_controller = new ChatController(chat_service);
+const chat_controller = new ChatController();
 
 const getAllChatRoute = chat.openapi(
 	createRoute({

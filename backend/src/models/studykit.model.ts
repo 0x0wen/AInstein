@@ -1,5 +1,5 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
-import { IUser, UserRequestSchema } from "./user.model";
+import mongoose, { Schema, type Document, type Model } from "mongoose";
+import type { IUser } from "./user.model";
 import * as z from "zod";
 
 export interface IStudykit {
@@ -16,7 +16,10 @@ export interface IStudykit {
 	updatedAt: Date;
 }
 
-export interface IStudykitDocument extends IStudykit, Document {}
+export interface IStudykitDocument extends IStudykit, Document {
+	openaiAssistantId?: string;
+	openaiThreadId?: string;
+}
 
 const StudykitSchema: Schema<IStudykitDocument> = new Schema(
 	{
@@ -42,6 +45,9 @@ const StudykitSchema: Schema<IStudykitDocument> = new Schema(
 			type: Date,
 			default: Date.now,
 		},
+		// Add optional fields for OpenAI integration
+		openaiAssistantId: { type: String, index: true },
+		openaiThreadId: { type: String, index: true },
 	},
 	{ timestamps: true },
 );

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, type Model } from "mongoose";
 import * as z from "zod";
 export interface IUser {
 	username: string;
@@ -6,6 +6,7 @@ export interface IUser {
 	email: string;
 	password: string;
 	age: number;
+	id: string;
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -14,6 +15,7 @@ const UserSchema: Schema<IUser> = new Schema({
 	email: { type: String, required: true, unique: true },
 	password: { type: String, required: true },
 	age: { type: Number, required: true },
+	id: { type: String, required: true },
 });
 
 export const UserRequestSchema = z.object({

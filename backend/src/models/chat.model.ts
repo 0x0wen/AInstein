@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
-import { IUser, UserRequestSchema } from "./user.model";
-import { IStudykit } from "./studykit.model";
+import mongoose, { Schema, type Document, type Model } from "mongoose";
+import { type IUser, UserRequestSchema } from "./user.model";
+import type { IStudykit } from "./studykit.model";
 import * as z from "zod";
 
 export interface IChat {
@@ -8,7 +8,7 @@ export interface IChat {
 	userId: mongoose.Types.ObjectId | IUser;
 	content: string;
 	role: "user" | "assistant";
-	contextResources: mongoose.Types.ObjectId[];
+	contextResources?: mongoose.Types.ObjectId[];
 	createdAt: Date;
 }
 
@@ -48,16 +48,17 @@ ChatSchema.index({ userId: 1, studyKitId: 1, createdAt: 1 });
 
 // Chat Request Schema
 export const ChatRequestSchema = z.object({
-	studyKitId: z.string(), // MongoDB ObjectId as string
-	userId: z.union([z.string(), UserRequestSchema]), // MongoDB ObjectId as string
 	content: z.string().min(1, { message: "Chat content is required" }),
-	role: z.enum(["user", "assistant"]),
-	contextResources: z.array(z.string()).optional(), // Array of resource ObjectIds
 });
 
 // Chat Response Schema
-export const ChatResponseSchema = ChatRequestSchema.extend({
+export const ChatResponseSchema = z.object({
 	id: z.string(), // MongoDB _id
+	studyKitId: z.string(),
+	userId: z.string(),
+	content: z.string(),
+	role: z.enum(["user", "assistant"]),
+	contextResources: z.array(z.string()).optional(),
 	createdAt: z.coerce.date(),
 });
 
