@@ -12,11 +12,12 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as AboutImport } from './routes/about'
+import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as IndexImport } from './routes/index'
-import { Route as SignUpIndexImport } from './routes/sign-up/index'
-import { Route as LoginIndexImport } from './routes/login/index'
-import { Route as StudyKitCreateIndexImport } from './routes/study-kit/create/index'
-import { Route as StudyKitIdIndexImport } from './routes/study-kit/$id/index'
+import { Route as UnauthenticatedSignUpIndexImport } from './routes/_unauthenticated/sign-up/index'
+import { Route as UnauthenticatedLoginIndexImport } from './routes/_unauthenticated/login/index'
+import { Route as AuthenticatedStudyKitCreateIndexImport } from './routes/_authenticated/study-kit/create/index'
+import { Route as AuthenticatedStudyKitIdIndexImport } from './routes/_authenticated/study-kit/$id/index'
 
 // Create/Update Routes
 
@@ -26,35 +27,44 @@ const AboutRoute = AboutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AuthenticatedRoute = AuthenticatedImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const SignUpIndexRoute = SignUpIndexImport.update({
-  id: '/sign-up/',
-  path: '/sign-up/',
-  getParentRoute: () => rootRoute,
-} as any)
+const UnauthenticatedSignUpIndexRoute = UnauthenticatedSignUpIndexImport.update(
+  {
+    id: '/_unauthenticated/sign-up/',
+    path: '/sign-up/',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
 
-const LoginIndexRoute = LoginIndexImport.update({
-  id: '/login/',
+const UnauthenticatedLoginIndexRoute = UnauthenticatedLoginIndexImport.update({
+  id: '/_unauthenticated/login/',
   path: '/login/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const StudyKitCreateIndexRoute = StudyKitCreateIndexImport.update({
-  id: '/study-kit/create/',
-  path: '/study-kit/create/',
-  getParentRoute: () => rootRoute,
-} as any)
+const AuthenticatedStudyKitCreateIndexRoute =
+  AuthenticatedStudyKitCreateIndexImport.update({
+    id: '/study-kit/create/',
+    path: '/study-kit/create/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
-const StudyKitIdIndexRoute = StudyKitIdIndexImport.update({
-  id: '/study-kit/$id/',
-  path: '/study-kit/$id/',
-  getParentRoute: () => rootRoute,
-} as any)
+const AuthenticatedStudyKitIdIndexRoute =
+  AuthenticatedStudyKitIdIndexImport.update({
+    id: '/study-kit/$id/',
+    path: '/study-kit/$id/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -67,6 +77,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedImport
+      parentRoute: typeof rootRoute
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -74,71 +91,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
-    '/login/': {
-      id: '/login/'
+    '/_unauthenticated/login/': {
+      id: '/_unauthenticated/login/'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LoginIndexImport
+      preLoaderRoute: typeof UnauthenticatedLoginIndexImport
       parentRoute: typeof rootRoute
     }
-    '/sign-up/': {
-      id: '/sign-up/'
+    '/_unauthenticated/sign-up/': {
+      id: '/_unauthenticated/sign-up/'
       path: '/sign-up'
       fullPath: '/sign-up'
-      preLoaderRoute: typeof SignUpIndexImport
+      preLoaderRoute: typeof UnauthenticatedSignUpIndexImport
       parentRoute: typeof rootRoute
     }
-    '/study-kit/$id/': {
-      id: '/study-kit/$id/'
+    '/_authenticated/study-kit/$id/': {
+      id: '/_authenticated/study-kit/$id/'
       path: '/study-kit/$id'
       fullPath: '/study-kit/$id'
-      preLoaderRoute: typeof StudyKitIdIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof AuthenticatedStudyKitIdIndexImport
+      parentRoute: typeof AuthenticatedImport
     }
-    '/study-kit/create/': {
-      id: '/study-kit/create/'
+    '/_authenticated/study-kit/create/': {
+      id: '/_authenticated/study-kit/create/'
       path: '/study-kit/create'
       fullPath: '/study-kit/create'
-      preLoaderRoute: typeof StudyKitCreateIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof AuthenticatedStudyKitCreateIndexImport
+      parentRoute: typeof AuthenticatedImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedStudyKitIdIndexRoute: typeof AuthenticatedStudyKitIdIndexRoute
+  AuthenticatedStudyKitCreateIndexRoute: typeof AuthenticatedStudyKitCreateIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedStudyKitIdIndexRoute: AuthenticatedStudyKitIdIndexRoute,
+  AuthenticatedStudyKitCreateIndexRoute: AuthenticatedStudyKitCreateIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/login': typeof LoginIndexRoute
-  '/sign-up': typeof SignUpIndexRoute
-  '/study-kit/$id': typeof StudyKitIdIndexRoute
-  '/study-kit/create': typeof StudyKitCreateIndexRoute
+  '/login': typeof UnauthenticatedLoginIndexRoute
+  '/sign-up': typeof UnauthenticatedSignUpIndexRoute
+  '/study-kit/$id': typeof AuthenticatedStudyKitIdIndexRoute
+  '/study-kit/create': typeof AuthenticatedStudyKitCreateIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/login': typeof LoginIndexRoute
-  '/sign-up': typeof SignUpIndexRoute
-  '/study-kit/$id': typeof StudyKitIdIndexRoute
-  '/study-kit/create': typeof StudyKitCreateIndexRoute
+  '/login': typeof UnauthenticatedLoginIndexRoute
+  '/sign-up': typeof UnauthenticatedSignUpIndexRoute
+  '/study-kit/$id': typeof AuthenticatedStudyKitIdIndexRoute
+  '/study-kit/create': typeof AuthenticatedStudyKitCreateIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/login/': typeof LoginIndexRoute
-  '/sign-up/': typeof SignUpIndexRoute
-  '/study-kit/$id/': typeof StudyKitIdIndexRoute
-  '/study-kit/create/': typeof StudyKitCreateIndexRoute
+  '/_unauthenticated/login/': typeof UnauthenticatedLoginIndexRoute
+  '/_unauthenticated/sign-up/': typeof UnauthenticatedSignUpIndexRoute
+  '/_authenticated/study-kit/$id/': typeof AuthenticatedStudyKitIdIndexRoute
+  '/_authenticated/study-kit/create/': typeof AuthenticatedStudyKitCreateIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | ''
     | '/about'
     | '/login'
     | '/sign-up'
@@ -147,6 +182,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | ''
     | '/about'
     | '/login'
     | '/sign-up'
@@ -155,30 +191,29 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
-    | '/login/'
-    | '/sign-up/'
-    | '/study-kit/$id/'
-    | '/study-kit/create/'
+    | '/_unauthenticated/login/'
+    | '/_unauthenticated/sign-up/'
+    | '/_authenticated/study-kit/$id/'
+    | '/_authenticated/study-kit/create/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
-  LoginIndexRoute: typeof LoginIndexRoute
-  SignUpIndexRoute: typeof SignUpIndexRoute
-  StudyKitIdIndexRoute: typeof StudyKitIdIndexRoute
-  StudyKitCreateIndexRoute: typeof StudyKitCreateIndexRoute
+  UnauthenticatedLoginIndexRoute: typeof UnauthenticatedLoginIndexRoute
+  UnauthenticatedSignUpIndexRoute: typeof UnauthenticatedSignUpIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
-  LoginIndexRoute: LoginIndexRoute,
-  SignUpIndexRoute: SignUpIndexRoute,
-  StudyKitIdIndexRoute: StudyKitIdIndexRoute,
-  StudyKitCreateIndexRoute: StudyKitCreateIndexRoute,
+  UnauthenticatedLoginIndexRoute: UnauthenticatedLoginIndexRoute,
+  UnauthenticatedSignUpIndexRoute: UnauthenticatedSignUpIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -192,30 +227,38 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/_authenticated",
         "/about",
-        "/login/",
-        "/sign-up/",
-        "/study-kit/$id/",
-        "/study-kit/create/"
+        "/_unauthenticated/login/",
+        "/_unauthenticated/sign-up/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/_authenticated": {
+      "filePath": "_authenticated.tsx",
+      "children": [
+        "/_authenticated/study-kit/$id/",
+        "/_authenticated/study-kit/create/"
+      ]
+    },
     "/about": {
       "filePath": "about.tsx"
     },
-    "/login/": {
-      "filePath": "login/index.tsx"
+    "/_unauthenticated/login/": {
+      "filePath": "_unauthenticated/login/index.tsx"
     },
-    "/sign-up/": {
-      "filePath": "sign-up/index.tsx"
+    "/_unauthenticated/sign-up/": {
+      "filePath": "_unauthenticated/sign-up/index.tsx"
     },
-    "/study-kit/$id/": {
-      "filePath": "study-kit/$id/index.tsx"
+    "/_authenticated/study-kit/$id/": {
+      "filePath": "_authenticated/study-kit/$id/index.tsx",
+      "parent": "/_authenticated"
     },
-    "/study-kit/create/": {
-      "filePath": "study-kit/create/index.tsx"
+    "/_authenticated/study-kit/create/": {
+      "filePath": "_authenticated/study-kit/create/index.tsx",
+      "parent": "/_authenticated"
     }
   }
 }

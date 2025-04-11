@@ -34,7 +34,7 @@ export const backgroundOptions = [
 'Waves',
 ];
 
-export const Route = createFileRoute('/study-kit/create/')({
+export const Route = createFileRoute('/_authenticated/study-kit/create/')({
   component: CreateKitPage,
 });
 

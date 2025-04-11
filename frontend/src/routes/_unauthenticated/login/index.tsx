@@ -6,7 +6,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowRight } from 'lucide-react';
 import { signIn } from '@/lib/auth-client';
 
-export const Route = createFileRoute('/login/')({
+export const Route = createFileRoute('/_unauthenticated/login/')({
   component: LoginPage,
 });
 
@@ -15,7 +15,7 @@ export default function LoginPage() {
     try {
       await signIn.social({
         provider: 'google',
-        callbackURL: '/study-kit',
+        callbackURL: 'http://localhost:5173',
         errorCallbackURL: '/error',
         newUserCallbackURL: '/study-kit',
       });
@@ -56,7 +56,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center min-w-screen justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">

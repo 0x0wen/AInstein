@@ -37,7 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { colorOptions } from '../create';
 import Backgrounds from '@/components/custom/Backgrounds';
 
-export const Route = createFileRoute('/study-kit/$id/')({
+export const Route = createFileRoute('/_authenticated/study-kit/$id/')({
   component: StudyKitPage,
 });
 
@@ -52,7 +52,8 @@ export default function StudyKitPage() {
       });
     },
   });
-  let studykit = error
+
+  const studykit = error
     ? dummy.studyKits.find((kit) => kit._id === id)
     : data?.data;
   if (!studykit) {
@@ -60,15 +61,19 @@ export default function StudyKitPage() {
   }
 
   const colorTheme = colorOptions.find(
-    (color) => color.value.hex == studykit.colorTheme,
+    (color) => color.value.hex === studykit.colorTheme,
   )?.value;
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="relative rounded-lg overflow-hidden mb-6">
           <div className="aspect-[4/1] w-full overflow-hidden">
-            <Backgrounds colorTheme={colorTheme!} type={studykit.background} small={false}/>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+            <Backgrounds
+              colorTheme={colorTheme!}
+              type={studykit.background}
+              small={false}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           </div>
           <div className="absolute bottom-0 left-0  p-6 w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -121,7 +126,7 @@ export default function StudyKitPage() {
                         New Chat
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl h-[80vh]">
+                    <DialogContent className="h-[80vh] max-w-4xl">
                       <DialogHeader>
                         <DialogTitle>Chat with AInstein</DialogTitle>
                       </DialogHeader>

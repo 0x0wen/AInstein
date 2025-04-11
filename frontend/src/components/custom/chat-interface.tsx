@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Paperclip, Send } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { authClient } from '@/lib/auth-client';
 
 interface ChatInterfaceProps {
   studyKitId: string;
@@ -21,11 +22,8 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
   const handleSendMessage = () => {
     if (!message.trim()) return;
 
-    // Add user message to chat
     setChatHistory([...chatHistory, { role: 'user', content: message }]);
 
-    // In a real app, you would send the message to an API and get a response
-    // For demo purposes, we'll simulate a response after a short delay
     setTimeout(() => {
       setChatHistory((prev) => [
         ...prev,
@@ -40,8 +38,18 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
     setMessage('');
   };
 
+  useEffect(() => {
+    async function fetchSession() {
+      const { data: session, error } = await authClient.getSession();
+      console.log('Session:', session);
+      console.log('Error:', error);
+    }
+
+    fetchSession();
+  }, []);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full w-full">
       <Card className="lg:col-span-1 h-full overflow-hidden">
         <CardContent className="p-4 h-full flex flex-col">
           <h3 className="font-medium mb-3">Context Resources</h3>
@@ -65,11 +73,12 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-3 h-full flex flex-col overflow-hidden">
+      <Card className="lg:col-span-3 h-full flex flex-col overflow-hidden w-full">
         <CardContent className="p-4 flex-grow overflow-y-auto">
           <div className="space-y-4">
             {chatHistory.map((chat, index) => (
               <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                 key={index}
                 className={`flex ${chat.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
               >
@@ -94,6 +103,7 @@ export function ChatInterface({ studyKitId }: ChatInterfaceProps) {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         >
+                          <title>Camera</title>
                           <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
                           <circle cx="12" cy="13" r="3" />
                         </svg>
