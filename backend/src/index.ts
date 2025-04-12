@@ -7,6 +7,9 @@ import { connectToDatabase } from "./utils/db";
 import { auth } from "@/utils/auth";
 import video from "./routes/video.route";
 import type { Context } from "hono";
+import chat from "./routes/chat.route";
+import conversation from "./routes/conversation.route";
+import { swaggerUI } from "@hono/swagger-ui";
 
 const MONGODB_URI =
 	Bun.env.BUN_ENV === "development"
@@ -18,7 +21,7 @@ await connectToDatabase(MONGODB_URI!);
 
 const api = new OpenAPIHono<{
 	Variables: {
-		user: typeof auth.$Infer.Session.user | null;
+		user: typeof auth.$Infer.Session.user | null | { id: string };
 		session: typeof auth.$Infer.Session.session | null;
 	};
 }>().basePath("/api");
@@ -43,6 +46,7 @@ api.use(
 // Auth Middleware
 api.use("*", async (c, next) => {
 	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	console.log("auth Middleware", session);
 
 	if (!session) {
 		c.set("user", null);
@@ -52,6 +56,7 @@ api.use("*", async (c, next) => {
 
 	c.set("user", session.user);
 	c.set("session", session.session);
+
 	return next();
 });
 
@@ -87,10 +92,13 @@ api.get("/", (c) => {
 
 api.route("/studykit", studykit);
 api.route("/user", user);
-// api.route("/chat", chat);
+api.route("/", chat);
+api.route("/", conversation);
 api.route("/video", video);
 // api.route("/flashcard", chat);
 // api.route("/quiz", chat);
+
+api.get("/ui", swaggerUI({ url: "/api/doc" }));
 
 const port = Bun.env.PORT || 3000;
 

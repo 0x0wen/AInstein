@@ -11,11 +11,10 @@ import mongoose from "mongoose";
 
 export class ChatController {
 	uploadFile = async (c: Context): Promise<Response> => {
-		// Use Hono context type 'any' for simplicity here
 		try {
 			const studyKitId = c.req.param("studykitId");
-			// Assuming user ID comes from auth middleware, e.g., c.get('user').id
-			const userId = c.get("userId") ?? "mockUserId"; // Replace with actual user ID retrieval
+			// Get user ID from auth middleware
+			const userId = c.get("user")?.id;
 			if (!userId) {
 				return c.json({ error: "User not authenticated" }, 401);
 			}
@@ -38,7 +37,6 @@ export class ChatController {
 				},
 				201,
 			);
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
 			console.error("File upload error:", error);
 			return c.json({ error: error.message || "Failed to upload file" }, 500);
@@ -46,11 +44,10 @@ export class ChatController {
 	};
 
 	streamChat = async (c: Context) => {
-		// Use Hono context type
 		try {
 			const studyKitId = c.req.param("studykitId");
-			// Assuming user ID comes from auth middleware
-			const userId = c.get("userId") ?? "mockUserId"; // Replace with actual user ID retrieval
+			// Get user ID from auth middleware
+			const userId = c.get("user")?.id;
 			if (!userId) {
 				// SSE cannot easily return a 401 before starting, handle upstream
 				console.error("Streaming chat attempt without user ID");
@@ -151,7 +148,6 @@ export class ChatController {
 								event: "message_complete",
 								data: "Stream finished",
 							});
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 						} catch (saveError: any) {
 							console.error("Failed to save assistant message:", saveError);
 							stream.writeSSE({
@@ -165,7 +161,6 @@ export class ChatController {
 				console.log("SSE stream connection closed.");
 				// Stream closes automatically when the 'async function*' completes
 			});
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
 			console.error("Streaming chat error:", error);
 			// If error happens before stream starts, return JSON error
@@ -173,16 +168,13 @@ export class ChatController {
 				{ error: error.message || "Failed to start chat stream" },
 				500,
 			);
-
-			// If stream already started, try sending an error event (best effort)
-			// console.error("Error occurred after SSE stream started.");
 		}
 	};
 
 	fetchChat = async (c: Context) => {
 		try {
 			const studyKitId = c.req.param("studykitId");
-			const userId = c.get("userId"); // Get from mockAuthMiddleware or real auth
+			const userId = c.get("user")?.id;
 			if (!userId) {
 				console.warn("Fetch history attempt without userId authentication.");
 				return c.json({ error: "User not authenticated" }, 401);
@@ -229,12 +221,10 @@ export class ChatController {
 					studyKitId: msg.studyKitId.toString(), // studyKitId is always ObjectId here
 					userId: userIdString, // Use the determined string ID
 					contextResources: msg.contextResources?.map((id) => id.toString()), // Map context resource ObjectIds
-					// user: typeof msg.userId === 'object' && msg.userId?._id ? { name: msg.userId.name, email: msg.userId.email } : undefined, // Optionally include populated user details
 				});
 			});
 
 			return c.json(responseData);
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
 			console.error(
 				`Fetch chat history error for StudyKit ${c.req.param("studykitId")}:`,

@@ -5,52 +5,61 @@ import openai from "@/utils/openai";
 import { Chat, type IChatDocument } from "@/models/chat.model";
 import type { Stream } from "openai/streaming";
 import type { AssistantStreamEvent } from "openai/resources/beta/assistants";
+import { Conversation } from "@/models/conversation.model";
 
 export async function uploadFileForStudykit(
-	studyKitId: string,
+	conversationId: mongoose.Types.ObjectId,
 	file: File,
-	userId: string,
 ): Promise<IResource> {
-	if (!mongoose.Types.ObjectId.isValid(studyKitId)) {
+	if (!mongoose.Types.ObjectId.isValid(conversationId)) {
 		throw new Error("Invalid StudyKit ID format");
 	}
 
-	const studykit = await Studykit.findById(studyKitId);
+	const studykit = await Conversation.findById(conversationId);
 	if (!studykit) {
 		throw new Error("StudyKit not found");
 	}
 
 	// 1. Upload to OpenAI
-	const openaiFile = await openai.files.create({
-		file: file,
-		purpose: "assistants",
-	});
+	try {
+		const openaiFile = await openai.files.create({
+			file: file,
+			purpose: "assistants",
+		});
 
-	// 2. Create Resource in DB
-	const newResource = new Resource({
-		studyKitId: studykit._id,
-		openaiFileId: openaiFile.id,
-		filename: file.name,
-		// Add userId if needed for ownership/permissions
-	});
-	await newResource.save();
+		// 2. Create Resource in DB
+		const newResource = new Resource({
+			studyKitId: studykit._id,
+			openaiFileId: openaiFile.id,
+			filename: file.name,
+			// Add userId if needed for ownership/permissions
+		});
+		await newResource.save();
 
-	// 3. (Optional but Recommended) Attach file to Assistant if it exists
-	//    This makes the file readily available for all threads with this assistant.
-	//    Alternatively, attach files when adding a message to a specific thread.
-	// if (studykit.openaiAssistantId) {
-	//      try {
-	//          await openai.beta.assistants.files.create(studykit.openaiAssistantId, {
-	//              file_id: openaiFile.id
-	//          });
-	//          console.log(`File ${openaiFile.id} attached to Assistant ${studykit.openaiAssistantId}`);
-	//      } catch (error) {
-	//          console.error(`Failed to attach file ${openaiFile.id} to assistant ${studykit.openaiAssistantId}:`, error);
-	//          // Decide how to handle: maybe retry later, or just rely on attaching to messages
-	//      }
-	// }
+		// 3. Attach file to Assistant if it exists
+		if (studykit.openaiAssistantId) {
+			try {
+				// @ts-ignore - OpenAI types are not up to date
+				await openai.beta.assistants.files.create(studykit.openaiAssistantId, {
+					file_id: openaiFile.id,
+				});
+				console.log(
+					`File ${openaiFile.id} attached to Assistant ${studykit.openaiAssistantId}`,
+				);
+			} catch (error) {
+				console.error(
+					`Failed to attach file ${openaiFile.id} to assistant ${studykit.openaiAssistantId}:`,
+					error,
+				);
+				// Continue anyway - the file is still uploaded and can be attached to messages
+			}
+		}
 
-	return newResource.toJSON();
+		return newResource.toJSON();
+	} catch (error) {
+		console.error("Error uploading file to OpenAI:", error);
+		throw new Error("Failed to upload file to OpenAI. Please try again.");
+	}
 }
 
 export async function getOrCreateAssistantAndThread(
@@ -76,27 +85,57 @@ export async function getOrCreateAssistantAndThread(
 		console.log(
 			`Creating new Assistant for StudyKit ${studyKitId} with files: ${fileIds.join(", ")}`,
 		);
-		const assistant = await openai.beta.assistants.create({
-			name: `StudyKit Assistant ${studyKitId}`,
-			instructions:
-				"You are a helpful study assistant. Use the provided files to answer questions about the study material.",
-			model: "gpt-4-turbo-preview", // Or your preferred model
-			tools: [{ type: "file_search" }], // Enable retrieval tool for file context
-		});
-		assistantId = assistant.id;
-		studykit.openaiAssistantId = assistantId;
-		needsSave = true;
-		console.log(`Created Assistant ${assistantId}`);
+		try {
+			const assistant = await openai.beta.assistants.create({
+				name: `StudyKit Assistant ${studyKitId}`,
+				instructions:
+					"You are a helpful study assistant. Use the provided files to answer questions about the study material. Be concise, accurate, and helpful. If you're not sure about something, acknowledge the uncertainty.",
+				model: "gpt-4-turbo-preview", // Or your preferred model
+				tools: [{ type: "file_search" }], // Enable retrieval tool for file context
+			});
+			assistantId = assistant.id;
+			studykit.openaiAssistantId = assistantId;
+			needsSave = true;
+			console.log(`Created Assistant ${assistantId}`);
+
+			// Attach existing files to the new assistant
+			if (fileIds.length > 0) {
+				for (const fileId of fileIds) {
+					try {
+						// @ts-ignore - OpenAI types are not up to date
+						await openai.beta.assistants.files.create(assistantId, {
+							file_id: fileId,
+						});
+						console.log(
+							`File ${fileId} attached to new Assistant ${assistantId}`,
+						);
+					} catch (error) {
+						console.error(
+							`Failed to attach file ${fileId} to new assistant ${assistantId}:`,
+							error,
+						);
+					}
+				}
+			}
+		} catch (error) {
+			console.error("Error creating OpenAI assistant:", error);
+			throw new Error("Failed to create AI assistant. Please try again.");
+		}
 	}
 
 	// Create Thread if it doesn't exist
 	if (!threadId) {
 		console.log(`Creating new Thread for StudyKit ${studyKitId}`);
-		const thread = await openai.beta.threads.create();
-		threadId = thread.id;
-		studykit.openaiThreadId = threadId;
-		needsSave = true;
-		console.log(`Created Thread ${threadId}`);
+		try {
+			const thread = await openai.beta.threads.create();
+			threadId = thread.id;
+			studykit.openaiThreadId = threadId;
+			needsSave = true;
+			console.log(`Created Thread ${threadId}`);
+		} catch (error) {
+			console.error("Error creating OpenAI thread:", error);
+			throw new Error("Failed to create chat thread. Please try again.");
+		}
 	}
 
 	if (needsSave) {
@@ -136,32 +175,36 @@ export async function processMessageStream(
 	const fileIds = resources.map((r) => r.openaiFileId);
 
 	// 1. Add user message to the thread
-	//    Include file_ids here if you want the assistant to specifically reference
-	//    these files for *this* particular message.
-	await openai.beta.threads.messages.create(threadId, {
-		role: "user",
-		content: userContent,
-		attachments: fileIds.map((fileId) => ({ file_id: fileId })),
-	});
+	try {
+		// @ts-ignore - OpenAI types are not up to date
+		await openai.beta.threads.messages.create(threadId, {
+			role: "user",
+			content: userContent,
+			attachments: fileIds.map((fileId) => ({ file_id: fileId })),
+		});
 
-	// Save user message to our DB (do this *before* starting the stream)
-	const userChat = new Chat({
-		studyKitId,
-		userId,
-		content: userContent,
-		role: "user",
-		// Optionally link resource documents if needed
-		contextResources: resources.map((r) => r._id),
-	});
-	await userChat.save();
+		// Save user message to our DB (do this *before* starting the stream)
+		const userChat = new Chat({
+			studyKitId,
+			userId,
+			content: userContent,
+			role: "user",
+			// Link resource documents
+			contextResources: resources.map((r) => r._id),
+		});
+		await userChat.save();
 
-	// 2. Create a Run and stream the response
-	const stream = await openai.beta.threads.runs.create(threadId, {
-		assistant_id: assistantId,
-		stream: true,
-	});
+		// 2. Create a Run and stream the response
+		const stream = await openai.beta.threads.runs.create(threadId, {
+			assistant_id: assistantId,
+			stream: true,
+		});
 
-	return stream; // Return the stream for the controller to handle
+		return stream; // Return the stream for the controller to handle
+	} catch (error) {
+		console.error("Error processing message:", error);
+		throw new Error("Failed to process your message. Please try again.");
+	}
 }
 
 // --- Save Assistant's Final Message ---
@@ -171,24 +214,42 @@ export async function saveAssistantMessage(
 	userId: string,
 	assistantContent: string,
 ): Promise<IChatDocument> {
-	const assistantChat = new Chat({
-		studyKitId,
-		userId, // Link assistant message to the user who initiated the request
-		content: assistantContent,
-		role: "assistant",
-	});
-	await assistantChat.save();
-	return assistantChat;
+	try {
+		const assistantChat = new Chat({
+			studyKitId,
+			userId, // Link assistant message to the user who initiated the request
+			content: assistantContent,
+			role: "assistant",
+		});
+		await assistantChat.save();
+		return assistantChat;
+	} catch (error) {
+		console.error("Error saving assistant message:", error);
+		throw new Error(
+			"Failed to save chat history. Your message was processed but not saved.",
+		);
+	}
 }
 
 // --- Fetch Chat History ---
 export async function fetchChatHistory(
-	studyKitId: string,
+	studyKitId: string | number,
 	limit = 50,
 ): Promise<IChatDocument[]> {
-	return Chat.find({ studyKitId: new mongoose.Types.ObjectId(studyKitId) })
-		.sort({ createdAt: -1 }) // Get latest messages first
-		.limit(limit)
-		.populate("userId", "name email") // Populate user details if needed (adjust fields)
-		.exec();
+	try {
+		const studyKit = await Studykit.findOne({ numericId: studyKitId }).exec();
+		if (!studyKit) {
+			throw new Error("StudyKit not found");
+		}
+
+		// Then use the StudyKit's ObjectId to query the chat history
+		return Chat.find({ studyKitId: studyKit._id })
+			.sort({ createdAt: -1 })
+			.limit(limit)
+			.populate("userId", "name email")
+			.exec();
+	} catch (error) {
+		console.error("Error fetching chat history:", error);
+		throw new Error("Failed to fetch chat history. Please try again.");
+	}
 }

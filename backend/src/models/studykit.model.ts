@@ -45,9 +45,6 @@ const StudykitSchema: Schema<IStudykitDocument> = new Schema(
 			type: Date,
 			default: Date.now,
 		},
-		// Add optional fields for OpenAI integration
-		openaiAssistantId: { type: String, index: true },
-		openaiThreadId: { type: String, index: true },
 	},
 	{ timestamps: true },
 );

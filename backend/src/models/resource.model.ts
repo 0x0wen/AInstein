@@ -1,16 +1,16 @@
 import mongoose, { Schema, type Document, type Model } from "mongoose";
 
 export interface IResource extends Document {
-	studyKitId: mongoose.Types.ObjectId;
+	conversationId: mongoose.Types.ObjectId;
 	openaiFileId: string;
 	filename: string;
 	createdAt: Date;
 }
 
 const ResourceSchema: Schema<IResource> = new Schema({
-	studyKitId: {
+	conversationId: {
 		type: Schema.Types.ObjectId,
-		ref: "StudyKit",
+		ref: "Conversation",
 		required: true,
 		index: true,
 	},
