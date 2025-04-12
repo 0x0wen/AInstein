@@ -6,12 +6,14 @@ export const Route = createFileRoute('/_authenticated')({
 });
 
 function RouteComponent() {
+  const { studykitId = '' } = Route.useParams();
+  
   return (
-    <>
-      <Sidebar />
+    <div className="flex min-h-screen w-full">
+      <Sidebar studykitId={studykitId}/>
       <main className="flex-1 bg-white">
         <Outlet />
       </main>
-    </>
+    </div>
   );
 }

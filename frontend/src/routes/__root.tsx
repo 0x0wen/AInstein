@@ -9,7 +9,7 @@ function RootComponent() {
   return (
     <React.Fragment>
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-background">
           <div className="flex flex-1">
             <Outlet />
           </div>

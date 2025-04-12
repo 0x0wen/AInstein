@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import {
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -12,6 +11,11 @@ import {
   HelpCircle,
   LogOut,
   User,
+  MessageSquare,
+  ChevronDown,
+  Plus,
+  Check,
+  X
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -22,15 +26,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useParams } from '@tanstack/react-router';
 import { data as dummy, type StudyKit } from '@/dummy';
-import { useQuery } from '@tanstack/react-query';
+import { Input } from '../ui/input';
 import api from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
-export function Sidebar() {
+export function Sidebar({studykitId}:{studykitId:string}) {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const { id } = useParams({ strict: false });
-  const { isPending, isLoading, data } = useQuery({
+  const [expandedKits, setExpandedKits] = useState<Record<string, boolean>>({
+    "calculus-fundamentals": true,
+  });
+  const [editingConversation, setEditingConversation] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { data } = useQuery({
     queryKey: ['Studykit List'],
     queryFn: async () => {
       return await api.get('/studykit').then((res) => {
@@ -39,10 +49,110 @@ export function Sidebar() {
       });
     },
   });
-  const studykitList = data;
-  if (isLoading || isPending) {
-    return <p>Loading...</p>;
-  }
+
+  // Update the expanded kits if the current studykit isn't expanded
+  useEffect(() => {
+    if (studykitId && !expandedKits[studykitId]) {
+      setExpandedKits((prev) => ({
+        ...prev,
+        [studykitId]: true,
+      }));
+    }
+  }, [studykitId, expandedKits]);
+
+  useEffect(() => {
+    if (editingConversation && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editingConversation]);
+
+  const toggleKit = (kitId: string) => {
+    setExpandedKits((prev) => ({
+      ...prev,
+      [kitId]: !prev[kitId],
+    }));
+  };
+
+  const createNewConversation = (kitId: string) => {
+    const newId = `conversation-${Date.now()}`;
+    const newConversation = {
+      _id: newId,
+      title: "New Conversation",
+      kitId: kitId,
+    };
+    
+    const updatedKits = [...dummy.studyKits];
+    const kitIndex = updatedKits.findIndex(kit => kit._id === kitId);
+    
+    if (kitIndex >= 0) {
+      if (!updatedKits[kitIndex].chatItems) {
+        updatedKits[kitIndex].chatItems = [];
+      }
+      updatedKits[kitIndex].chatItems.push(newConversation);
+      
+      // Navigate to the new conversation
+      navigate({
+        to: `/study-kit/${kitId}`,
+        search: {
+          conversation: newId,
+          view: 'chat'
+        }
+      });
+      
+      // Return the ID so it can be used for editing
+      return newId;
+    }
+    
+    return null;
+  };
+
+  const saveConversationName = async (studykitId: string) => {
+    if (!editingConversation || !editValue.trim()) return;
+
+    try {
+      api.post('/conversations',{
+        title: editValue,
+	      studykitId
+      })
+      console.log("API request made:", {
+        conversationId: editingConversation,
+        newName: editValue,
+      });
+      const updatedKits = [...dummy.studyKits];
+      for (const kit of updatedKits) {
+        if (kit.chatItems) {
+          const conversationIndex = kit.chatItems.findIndex(
+            conv => conv._id === editingConversation
+          );
+          if (conversationIndex >= 0) {
+            kit.chatItems[conversationIndex].title = editValue;
+            break;
+          }
+        }
+      }
+
+      setEditingConversation(null);
+      setEditValue("");
+    } catch (error) {
+      console.error("Error updating conversation name:", error);
+      setEditingConversation(null);
+      setEditValue("");
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingConversation(null);
+    setEditValue("");
+  };
+
+  const handleCreateNewConversation = (kitId: string) => {
+    const newId = createNewConversation(kitId);
+    if (newId) {
+      setEditingConversation(newId);
+      setEditValue("New Conversation");
+    }
+  };
+
   return (
     <aside
       className={`bg-gray-50 border-r border-gray-200 h-screen sticky top-0 transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}
@@ -146,36 +256,75 @@ export function Sidebar() {
                 Study Kits
               </div>
             )}
-            {dummy.studyKits.map((kit) => (
-              <Link
-                key={kit._id}
-                to={'/study-kit/$id'}
-                params={{ id: kit._id }}
-                className={`flex items-center p-2 rounded-md ${
-                  kit._id === id
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-gray-700 hover:bg-gray-100'
-                } mb-1 transition-colors`}
-              >
-                <BookOpen className="h-5 w-5 mr-3" />
-                {!collapsed && <span className="truncate">{kit.name}</span>}
-              </Link>
+            {data?.map((kit) => (
+              <div key={kit._id} className="px-2 text-foreground">
+                <button
+                  className={`w-full flex items-center cursor-pointer justify-between p-2 rounded-md text-left ${studykitId === kit._id ? "bg-muted" : "hover:bg-muted/50"}`}
+                  onClick={() => {toggleKit(kit._id); navigate({
+                    to:`/study-kit/$id`,
+                    params:{ id: kit._id }
+                  })}}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{kit.name}</span>
+                  </div>
+                  {expandedKits[kit._id] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+
+                {expandedKits[kit._id] && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    {kit.chatItems?.map((conversation) => (
+                      <div key={conversation._id} className="relative">
+                        {editingConversation === conversation._id ? (
+                          <div className="flex items-center gap-1 p-1">
+                            <MessageSquare size={14} className="ml-1 shrink-0 text-muted-foreground" />
+                            <Input
+                              ref={inputRef}
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveConversationName(kit._id);
+                                if (e.key === "Escape") cancelEditing();
+                              }}
+                              className="h-7 text-sm py-1 px-2"
+                            />
+                            <button onClick={saveConversationName} className="p-1 rounded-md hover:bg-muted" title="Save">
+                              <Check size={14} className="text-green-500" />
+                            </button>
+                            <button onClick={cancelEditing} className="p-1 rounded-md hover:bg-muted" title="Cancel">
+                              <X size={14} className="text-red-500" />
+                            </button>
+                          </div>
+                        ) : (
+                          <Link
+                            to={`/study-kit/$id`}
+                            params={{ id: kit._id }}
+                            search={() => ({
+                              conversation: conversation._id,
+                              view: 'chat'
+                            })}
+                            className={`w-full flex items-center gap-2 p-2 rounded-md text-left text-sm ${
+                              studykitId === kit._id ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/50"
+                            }`}
+                          >
+                            <MessageSquare size={14} />
+                            <span>{conversation.title}</span>
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      className="w-full cursor-pointer flex items-center gap-2 p-2 rounded-md text-left text-sm text-muted-foreground hover:bg-muted/50"
+                      onClick={() => handleCreateNewConversation(kit._id)}
+                    >
+                      <Plus size={14} />
+                      <span>New conversation</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ))}
-            {/* {studykitList?.map((kit: StudyKit) => ( */}
-            {/*   <Link */}
-            {/*     key={kit._id} */}
-            {/*     to={'/study-kit/$id'} */}
-            {/*     params={{ id: kit._id }} */}
-            {/*     className={`flex items-center p-2 rounded-md ${ */}
-            {/*       kit._id === id */}
-            {/*         ? 'bg-primary/10 text-primary' */}
-            {/*         : 'text-gray-700 hover:bg-gray-100' */}
-            {/*     } mb-1 transition-colors`} */}
-            {/*   > */}
-            {/*     <BookOpen className="h-5 w-5 mr-3" /> */}
-            {/*     {!collapsed && <span className="truncate">{kit.name}</span>} */}
-            {/*   </Link> */}
-            {/* ))} */}
+            
             <Link
               to="/study-kit/create"
               className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-md mb-1 transition-colors"
@@ -208,10 +357,10 @@ export function Sidebar() {
                   Recent Activity
                 </h3>
                 <div className="space-y-2">
-                  {dummy.recentActivities.map((activity) => (
+                  {dummy.recentActivities?.map((activity) => (
                     <Link
                       key={activity._id}
-                      to={'/study-kit/$id'}
+                      to={`/study-kit/$id`}
                       params={{ id: activity._id }}
                       className="block text-sm p-2 hover:bg-gray-100 rounded-md transition-colors"
                     >
@@ -232,7 +381,7 @@ export function Sidebar() {
                   Bookmark
                 </h3>
                 <Link
-                  to={'/study-kit/create'}
+                  to="/study-kit/create"
                   className="block text-foreground text-sm p-2 hover:bg-gray-100 rounded-md transition-colors"
                 >
                   View all saved materials

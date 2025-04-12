@@ -44,6 +44,7 @@ export const Route = createFileRoute('/_authenticated/study-kit/$id/')({
 
 export default function StudyKitPage() {
   const { id } = Route.useParams();
+  
   const { isPending, isLoading, isRefetching, error, data } = useQuery({
     queryKey: ['Studykit', id],
     queryFn: async () => {
@@ -55,10 +56,10 @@ export default function StudyKitPage() {
   });
   const [activeView, setActiveView] = useState<'chat' | 'library'>('chat');
 
-  // const studykit = error
-  //   ? dummy.studyKits.find((kit) => kit._id === id)
-  //   : data?.data;
-  const studykit = dummy.studyKits.find((kit) => kit._id === id);
+  const studykit = error
+    ? dummy.studyKits.find((kit) => kit._id === id)
+    : data?.data;
+  // const studykit = dummy.studyKits.find((kit) => kit._id === id);
   if (!studykit) {
     return <div>Study Kit not found</div>;
   }
@@ -77,13 +78,13 @@ export default function StudyKitPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveView('chat')}
-                className={`px-3 py-1 text-sm rounded-md ${activeView === 'chat' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                className={`px-3 py-1 text-sm cursor-pointer rounded-md ${activeView === 'chat' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
               >
                 Chat
               </button>
               <button
                 onClick={() => setActiveView('library')}
-                className={`px-3 py-1 text-sm rounded-md ${activeView === 'library' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                className={`px-3 py-1 text-sm cursor-pointer rounded-md ${activeView === 'library' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
               >
                 Library
               </button>
@@ -177,7 +178,7 @@ export default function StudyKitPage() {
                         </Dialog>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {studykit.videoItems?.map((video: any) => (
+                        {studykit.videoItems != undefined && studykit.videoItems?.map((video: any) => (
                           <Dialog key={video.id}>
                             <DialogTrigger asChild>
                               <Card className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden">
@@ -262,7 +263,7 @@ export default function StudyKitPage() {
                         </Dialog>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {studykit.flashcardDecks?.map((deck: any) => {
+                        {studykit.flashcardDecks != undefined && studykit.flashcardDecks?.map((deck: any) => {
                           return (
                             <Dialog key={deck.id}>
                               <DialogTrigger asChild>
@@ -353,7 +354,7 @@ export default function StudyKitPage() {
                         </Dialog>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {studykit.quizItems?.map((quiz: any) => (
+                        {studykit.quizItems!= undefined && studykit.quizItems?.map((quiz: any) => (
                           <Dialog key={quiz.id}>
                             <DialogTrigger asChild>
                               <Card className="cursor-pointer hover:shadow-md transition-shadow">

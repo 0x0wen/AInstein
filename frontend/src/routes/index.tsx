@@ -61,9 +61,9 @@ export default function HomePage() {
           {dummy.studyKits.map((kit) => (
             <StudyKitCard key={kit._id} studyKit={kit} />
           ))}
-          {/* {data?.map((kit: StudyKit) => ( */}
-          {/*   <StudyKitCard key={kit._id} studyKit={kit} /> */}
-          {/* ))} */}
+           {data?.map((kit: StudyKit) => ( 
+             <StudyKitCard key={kit._id} studyKit={kit} /> 
+           ))} 
           <Link to="/study-kit/create" className="block">
             <motion.div
               ref={cardRef}
