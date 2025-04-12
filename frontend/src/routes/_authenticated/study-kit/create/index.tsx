@@ -24,14 +24,14 @@ export const colorOptions = [
 ];
 
 export const backgroundOptions = [
-'LiquidChrome' ,
-'Iridescence' ,
-'Balatro',
-'Dither',
-'Threads',
-'LetterGlitch' ,
-'Particles',
-'Waves',
+  'LiquidChrome',
+  'Iridescence',
+  'Balatro',
+  'Dither',
+  'Threads',
+  'LetterGlitch',
+  'Particles',
+  'Waves',
 ];
 
 export const Route = createFileRoute('/_authenticated/study-kit/create/')({
@@ -174,13 +174,13 @@ export default function CreateKitPage() {
                           : 'border-transparent'
                       }`}
                       style={{ backgroundColor: color.value.hex }}
-                      onClick={() =>
-                        {console.log(formData);
-                          setFormData((prev) => ({
+                      onClick={() => {
+                        console.log(formData);
+                        setFormData((prev) => ({
                           ...prev,
                           colorTheme: color.value.hex,
-                        }))}
-                      }
+                        }));
+                      }}
                       title={color.name}
                     >
                       {formData.colorTheme === color.value.hex && (
@@ -222,30 +222,45 @@ export default function CreateKitPage() {
                       }
                       title={background}
                     >
-                      <Backgrounds colorTheme={colorOptions.find((color)=>formData.colorTheme == color.value.hex)?.value!} type={background}/>
+                      <Backgrounds
+                        colorTheme={
+                          colorOptions.find(
+                            (color) => formData.colorTheme == color.value.hex,
+                          )?.value!
+                        }
+                        type={background}
+                      />
                       {formData.background === background && (
-                        
-                        <div className='bg-black/70 w-full h-full absolute  top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center'><svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className=' z-50'
-                        >
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg></div>
+                        <div className="bg-black/70 w-full h-full absolute  top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className=" z-50"
+                          >
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
                 <div className="border-2 border-dashed border-gray-300 h-[200px] overflow-hidden rounded-lg text-center">
-                <Backgrounds colorTheme={colorOptions.find((color)=>formData.colorTheme == color.value.hex)?.value!} type={formData.background}/>
-                {/* {imagePreview ? (
+                  <Backgrounds
+                    colorTheme={
+                      colorOptions.find(
+                        (color) => formData.colorTheme == color.value.hex,
+                      )?.value!
+                    }
+                    type={formData.background}
+                  />
+                  {/* {imagePreview ? (
                     <div className="relative">
                       <img
                         src={imagePreview || '/placeholder.svg'}
