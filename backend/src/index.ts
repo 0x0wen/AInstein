@@ -13,7 +13,7 @@ import { swaggerUI } from "@hono/swagger-ui";
 
 const MONGODB_URI =
 	Bun.env.BUN_ENV === "development"
-		? "mongodb://localhost/ainstein"
+		? Bun.env.MONGODB_TEST_URI
 		: Bun.env.MONGODB_URI;
 
 // biome-ignore lint/style/noNonNullAssertion: <explanation>

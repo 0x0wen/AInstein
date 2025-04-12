@@ -2,12 +2,13 @@ import type { Context } from "hono";
 import * as StudykitService from "@/services/studykit.service";
 import type { IStudykit } from "@/models/studykit.model";
 import mongoose from "mongoose";
+import { IUser } from "@/models/user.model";
 
 export class StudykitController {
 	async fetchAllStudyKit(c: Context) {
 		try {
 			const result = await StudykitService.fetchAllStudykits(
-				new mongoose.Types.ObjectId("67e2695d8f4383738ccce306"),
+				c.get('user').id,
 			);
 			return c.json(result, 200);
 		} catch (error) {
@@ -51,7 +52,7 @@ export class StudykitController {
 			const studykit = c.req.valid("json") as IStudykit;
 			const result = await StudykitService.createStudykit({
 				...studykit,
-				userId: new mongoose.Types.ObjectId("67e2695d8f4383738ccce306"),
+				userId: c.get('user').id,
 			});
 			return c.json(
 				result,

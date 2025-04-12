@@ -6,7 +6,7 @@ export class VideoController {
 	async fetchAllVideo(c: Context) {
 		try {
 			const result = await VideoService.fetchAllVideos(
-				new mongoose.Types.ObjectId("67e2695d8f4383738ccce306"),
+				c.get('user').id,
 			);
 			return c.json(result, 200);
 		} catch (error) {
@@ -51,7 +51,7 @@ export class VideoController {
 			const { prompt } = await c.req.json();
 			const result = await VideoService.createVideo(
 				prompt,
-				new mongoose.Types.ObjectId("67e2695d8f4383738ccce306"),
+				c.get('user').id,
 			);
 
 			return c.json(result, 200);
