@@ -57,8 +57,7 @@ GENERAL REQUIREMENTS:
    - Sync animation duration with narration naturally.
 10. Complete Scene Class:
    - Output a fully structured VoiceoverScene class that is ready to render.
-11. Self-Contained Output:
-   - The final code must run independently with standard Manim + voiceover extensions installed.
+11. No extra explanation. The response will be executed by a lambda function rightaway, please do not add extra sentence or explanations, just straight up python code.
 
 
 MATH-SPECIFIC REQUIREMENTS:
