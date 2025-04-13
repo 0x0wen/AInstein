@@ -46,7 +46,6 @@ api.use(
 // Auth Middleware
 api.use("*", async (c, next) => {
 	const session = await auth.api.getSession({ headers: c.req.raw.headers });
-	console.log("auth Middleware", session);
 
 	if (!session) {
 		c.set("user", null);

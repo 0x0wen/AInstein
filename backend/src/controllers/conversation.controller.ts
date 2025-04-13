@@ -1,9 +1,4 @@
-import {
-	ConversationRequestSchema,
-	ConversationResponseSchema,
-	GetAllConversationRequestSchema,
-	IConversationDocument,
-} from "@/models/conversation.model";
+import { ConversationRequestSchema } from "@/models/conversation.model";
 import {
 	createConversation,
 	getConversationsByUserAndStudyKit,

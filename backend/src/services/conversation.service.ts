@@ -125,8 +125,8 @@ export const getConversationsByUserAndStudyKit = async (
 
 		// Find all conversations where both userId and studyKitId match.
 		const conversations = await Conversation.find({
-			userId: userId,
-			studyKitId: studyKitId,
+			userId: new mongoose.Types.ObjectId(userId),
+			studyKitId: new mongoose.Types.ObjectId(studyKitId),
 		})
 			.populate({
 				path: "studyKitId",

@@ -241,10 +241,9 @@ export async function fetchChatHistory(
 		}
 
 		// Then use the StudyKit's ObjectId to query the chat history
-		return Chat.find({ studyKitId: studyKit._id })
+		return Chat.find({ conversationId: studyKit._id })
 			.sort({ createdAt: -1 })
 			.limit(limit)
-			.populate("userId", "name email")
 			.exec();
 	} catch (error) {
 		console.error("Error fetching chat history:", error);

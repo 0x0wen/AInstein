@@ -8,7 +8,6 @@ import {
 } from "@/services/chat.service";
 import type { Context } from "hono";
 import { streamSSE } from "hono/streaming";
-import mongoose from "mongoose";
 
 export class ChatController {
 	uploadFile = async (c: Context): Promise<Response> => {
@@ -200,15 +199,26 @@ export class ChatController {
 			// Reverse history to show oldest first for typical chat display
 			const displayHistory = history.reverse();
 
-			// Map to response schema, handling potential population of userId
 			const responseData = displayHistory.map((msg) => {
-				return ChatResponseSchema.parse({
-					...msg.toJSON(), // Use toJSON to get plain object, includes fields like content, role, createdAt
+				return {
 					id: msg.id.toString(), // Explicitly use document's _id
 					conversationId: msg.conversationId.toString(), // studyKitId is always ObjectId here
-					contextResources: msg.contextResources?.map((id) => id.toString()), // Map context resource ObjectIds
-				});
+					content: msg.content,
+					role: msg.role,
+					createdAt: msg.createdAt.toISOString(), // Convert to ISO string for JSON
+					updatedAt: msg.updatedAt.toISOString(), // Convert to ISO string for JSON
+				};
 			});
+
+			// Map to response schema, handling potential population of userId
+			// const responseData = displayHistory.map((msg) => {
+			// 	return ChatResponseSchema.parse({
+			// 		...msg.toJSON(), // Use toJSON to get plain object, includes fields like content, role, createdAt
+			// 		id: msg.id.toString(), // Explicitly use document's _id
+			// 		conversationId: msg.conversationId.toString(), // studyKitId is always ObjectId here
+			// 		contextResources: msg.contextResources?.map((id) => id.toString()), // Map context resource ObjectIds
+			// 	});
+			// });
 
 			return c.json(responseData);
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
