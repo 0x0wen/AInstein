@@ -10,7 +10,8 @@ import {
   BarChart3,
   Loader2, // For loading indicators
   X, // For close button
-  Paperclip, // For attach file button
+  Paperclip,
+  MoreHorizontal, // For attach file button
 } from 'lucide-react';
 import { Button } from '@/components/ui/button'; // Adjust path as needed
 import { Input } from '@/components/ui/input'; // Adjust path as needed
@@ -23,6 +24,8 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../ui/dropdown-menu';
+import { VideoPreview } from './VideoPreview';
 
 // Define the structure for different message types in the chat
 type MessageType =
@@ -66,6 +69,7 @@ interface ChatInterfaceProps {
   studyKit: StudyKit & { _id: string }; // Ensure studyKit object includes its ID
   conversationId: string; // Keep if needed for other backend interactions
 }
+type CommandType = "video" | "quiz" | "flashcard" | null
 
 // --- The Chat Interface Component ---
 export function ChatInterface({
@@ -75,6 +79,7 @@ export function ChatInterface({
   // --- State Variables ---
   const [messages, setMessages] = useState<MessageType[]>([]); // Stores all chat messages
   const [inputValue, setInputValue] = useState(''); // Current value of the text input
+  const [activeCommand, setActiveCommand] = useState<CommandType>(null)
   const [activeContent, setActiveContent] = useState<{
     // State for the right-side panel (video, quiz, etc.)
     type: string;
@@ -84,6 +89,7 @@ export function ChatInterface({
   const [isLoadingHistory, setIsLoadingHistory] = useState(true); // Loading state for initial history fetch
   const [isAssistantResponding, setIsAssistantResponding] = useState(false); // True while waiting for SSE response
   const [isUploading, setIsUploading] = useState(false); // True during file upload
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // --- Refs ---
   const messagesEndRef = useRef<HTMLDivElement>(null); // Ref to scroll to the bottom of messages
@@ -199,6 +205,7 @@ export function ChatInterface({
     return () => {
       abortControllerRef.current?.abort();
     };
+    setActiveCommand(null)
   }, []);
 
   // --- 2. Handle File Upload ---
@@ -271,12 +278,12 @@ export function ChatInterface({
     const messageContent = inputValue.trim();
     // Prevent sending empty messages or while busy
     if (!messageContent || isAssistantResponding || isUploading) return;
-
+  
     // Abort any existing SSE connection before starting a new one
     abortControllerRef.current?.abort();
     const newAbortController = new AbortController();
     abortControllerRef.current = newAbortController;
-
+  
     // Add user message to state immediately for responsiveness
     const userMessage: MessageType = {
       id: `user-${Date.now()}`,
@@ -287,16 +294,105 @@ export function ChatInterface({
     setMessages((prev) => [...prev, userMessage]);
     setInputValue(''); // Clear input field
     setIsAssistantResponding(true); // Set loading state
-
+  
+    // Check if this is a video request (either from active command or message content)
+    const isVideoRequest = 
+      activeCommand === "video" || 
+      messageContent.toLowerCase().includes("video");
+  
+    // Reset active command after using it
+    if (activeCommand) {
+      setActiveCommand(null);
+    }
+  
+    // Handle video generation request
+    if (isVideoRequest) {
+      // Add a placeholder message for video generation
+      const videoMessageId = `video-${Date.now()}`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: 'text',
+          content: 'Generating video... This may take a moment.',
+          sender: 'assistant',
+          id: videoMessageId,
+        },
+      ]);
+  
+      try {
+        // Call the video generation service
+        const response = await fetch('http://localhost:3000/api/video', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: messageContent,
+            studyKitId: studyKit._id,
+          }),
+          credentials: 'include', // Include cookies for session management
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Video generation failed: ${response.status}`);
+        }
+  
+        const videoData = await response.json();
+        console.log('Video generation successful:', videoData);
+  
+        // Replace the placeholder with video message
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === videoMessageId
+              ? {
+                  id: videoMessageId,
+                  type: 'video' as const,
+                  sender: 'assistant',
+                  content: {
+                    id: videoData._id,
+                    title: videoData.title,
+                    duration: videoData.duration ? `${videoData.duration}s` : '~1 min',
+                  },
+                }
+              : msg
+          )
+        );
+  
+        // Automatically open the video player
+        setActiveContent({
+          type: 'video',
+          id: videoData._id,
+          title: videoData.title,
+        });
+  
+        setIsAssistantResponding(false);
+        return; // Exit early, don't continue with regular chat flow
+      } catch (error) {
+        console.error('Video generation error:', error);
+        // Update placeholder with error message
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === videoMessageId
+              ? {
+                  ...msg,
+                  type: 'error' as const,
+                  content: `Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                }
+              : msg
+          )
+        );
+        setIsAssistantResponding(false);
+        return; // Exit early
+      }
+    }
+  
+    // Standard chat flow continues below for non-video requests
     // Prepare request payload for the backend
-    // Adjust payload according to your ChatRequestSchema
     const payload = {
       content: messageContent,
-      // conversationId: conversationId, // Include if needed by backend
     };
-
+  
     // Add a placeholder message for the assistant's response
-    // This placeholder will be updated by SSE events
     const assistantMessageId = `assist-${Date.now()}`;
     setMessages((prev) => [
       ...prev,
@@ -307,10 +403,10 @@ export function ChatInterface({
         id: assistantMessageId, // Assign an ID to find and update it
       },
     ]);
-
-    const url = `http://localhost:3000/api/chat/${conversationId}`; // Adjust URL as needed
+  
+    const url = `http://localhost:3000/api/chat/${conversationId}`;
     console.log(`Sending message to: ${url}`);
-
+  
     try {
       await fetchEventSource(url, {
         method: 'POST',
@@ -321,9 +417,8 @@ export function ChatInterface({
         body: JSON.stringify(payload),
         signal: newAbortController.signal, // Pass the abort signal
         credentials: 'include', // Include cookies for session management
-
+  
         // Called when the connection is opened
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         onopen: async (response: any) => {
           console.log('SSE connection opened.');
           if (
@@ -338,7 +433,7 @@ export function ChatInterface({
               response.status,
               errorText,
             );
-
+  
             // Update the placeholder message with an error
             setMessages((prev) =>
               prev.map((msg) =>
@@ -355,9 +450,8 @@ export function ChatInterface({
             throw new Error(`SSE connection failed: ${response.status}`); // Stop fetchEventSource
           }
         },
-
+  
         // Called for each message received from the stream
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         onmessage: (event: any) => {
           console.debug('SSE Event:', event.event, 'Data:', event.data);
           if (event.event === 'message_complete') {
@@ -366,7 +460,7 @@ export function ChatInterface({
           try {
             // --- Process Incoming SSE Events ---
             const data = JSON.parse(event.data);
-
+  
             setMessages((prevMessages) => {
               // Find the index of the message we need to update
               const targetIndex = prevMessages.findIndex(
@@ -380,7 +474,7 @@ export function ChatInterface({
                 return prevMessages; // Should not happen
               }
               const targetMsg = prevMessages[targetIndex];
-
+  
               // --- Handle 'message_delta' (Partial Text Update) ---
               if (
                 event.event === 'message_delta' &&
@@ -400,9 +494,8 @@ export function ChatInterface({
                   ...prevMessages.slice(targetIndex + 1),
                 ];
               }
+              
               // --- Handle 'message_complete' (Final Message) ---
-              // !!! IMPORTANT !!!: Assume 'data.message' contains the final, structured message
-              //                    object matching one of the `MessageType` variants. Adjust if needed.
               if (event.event === 'message_complete' && data.message) {
                 console.log('Received message_complete:', data.message);
                 // Ensure the completed message has the correct ID and sender
@@ -427,8 +520,8 @@ export function ChatInterface({
                   ...prevMessages.slice(targetIndex + 1),
                 ];
               }
+              
               // --- Handle 'tool_call' (Optional) ---
-              // Example: Briefly update text to indicate thinking
               if (event.event === 'tool_call') {
                 console.log('Received tool_call:', data);
                 const updatedContent = `${targetMsg.type === 'text' ? targetMsg.content : ''}\n*(Processing...)*`;
@@ -443,6 +536,7 @@ export function ChatInterface({
                   ...prevMessages.slice(targetIndex + 1),
                 ];
               }
+              
               // --- Handle 'error' event from backend ---
               if (event.event === 'error' && data.message) {
                 console.error(
@@ -460,7 +554,7 @@ export function ChatInterface({
                   ...prevMessages.slice(targetIndex + 1),
                 ];
               }
-
+  
               // If event is not handled, return previous state
               return prevMessages;
             });
@@ -485,9 +579,8 @@ export function ChatInterface({
             );
           }
         },
-
+  
         // Called when the stream encounters an error
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         onerror: (err: any) => {
           console.error('SSE Error:', err);
           setMessages((prev) =>
@@ -510,14 +603,12 @@ export function ChatInterface({
           }
           throw err; // Propagate other errors
         },
-
+  
         // Called when the stream is closed by the server
         onclose: () => {
           console.log('SSE Connection closed by server.');
           setIsAssistantResponding(false); // Clear loading state
           abortControllerRef.current = null;
-          // Optional: You might want to check if the last message was fully completed
-          // or if it ended abruptly (e.g., check if the last received message was 'message_complete')
         },
       });
     } catch (error) {
@@ -541,7 +632,26 @@ export function ChatInterface({
       }
     }
   };
+  const handleCommandSelect = (command: CommandType) => {
+    setActiveCommand(command)
+    // Focus the input after selecting a command
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 0)
+  }
 
+  const getCommandIcon = (command: CommandType) => {
+    switch (command) {
+      case "video":
+        return <Video size={16} />
+      case "quiz":
+        return <BrainCircuit size={16} />
+      case "flashcard":
+        return <BookOpen size={16} />
+      default:
+        return null
+    }
+  }
   // --- 4. Render Individual Messages ---
   const renderMessage = (message: MessageType, index: number) => {
     const isLastMessage = index === messages.length - 1;
@@ -614,36 +724,56 @@ export function ChatInterface({
               <div className="flex-grow min-w-0">
                 {/* Render specific card content based on type */}
                 {message.type === 'video' && (
-                  <>
-                    <p className="text-sm mb-2 text-foreground">
-                      Here's a video about {message.content.title}:
-                    </p>
-                    <div className="bg-card rounded-lg overflow-hidden border">
-                      <div className="p-3 border-b flex justify-between items-center">
-                        <h3 className="font-medium text-sm text-card-foreground">
-                          {message.content.title}
-                        </h3>
-                        <span className="text-xs text-muted-foreground">
-                          {message.content.duration}
-                        </span>
-                      </div>
-                      <div className="aspect-video bg-secondary flex items-center justify-center">
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            setActiveContent({
-                              type: 'video',
-                              id: message.content.id,
-                              title: message.content.title,
-                            })
-                          }
-                        >
-                          Watch Video
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                )}
+  <>
+    <p className="text-sm mb-2 text-foreground">
+      Here's a video about {message.content.title}:
+    </p>
+    <div className="bg-card rounded-lg overflow-hidden border">
+      <div className="p-3 border-b flex justify-between items-center">
+        <h3 className="font-medium text-sm text-card-foreground">
+          {message.content.title}
+        </h3>
+        <span className="text-xs text-muted-foreground">
+          {message.content.duration}
+        </span>
+      </div>
+      
+      {/* Video Player Section */}
+      <div className="aspect-video bg-black relative">
+        <VideoPreview 
+          videoId={message.content.id} 
+          onExpandClick={() => 
+            setActiveContent({
+              type: 'video',
+              id: message.content.id,
+              title: message.content.title,
+            })
+          }
+        />
+      </div>
+      
+      <div className="p-2 flex justify-between items-center">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() =>
+            setActiveContent({
+              type: 'video',
+              id: message.content.id,
+              title: message.content.title,
+            })
+          }
+        >
+          Expand
+        </Button>
+        
+        <span className="text-xs text-muted-foreground">
+          Click video to play/pause
+        </span>
+      </div>
+    </div>
+  </>
+)}
                 {message.type === 'quiz' && (
                   <>
                     <p className="text-sm mb-2 text-foreground">
@@ -822,9 +952,8 @@ export function ChatInterface({
 
         {/* Input Area at the bottom */}
         <div className="border-t p-3 md:p-4 bg-background sticky bottom-0">
-          <div className="max-w-4xl mx-auto flex gap-2 items-center">
-            {/* Hidden File Input for Upload */}
-            <input
+        <div className="max-w-3xl mx-auto flex gap-2">
+        <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileSelect}
@@ -846,42 +975,63 @@ export function ChatInterface({
                 <Paperclip size={20} />
               )}
             </Button>
-            {/* Text Input and Send Button Container */}
-            <div className="flex-1 relative">
-              <Input
-                placeholder="Ask anything or request resources..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    // Send on Enter (not Shift+Enter)
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                className="pr-12 text-base" // Space for the button, adjust text size if needed
-                disabled={
-                  isAssistantResponding || isUploading || isLoadingHistory
-                }
-              />
-              {/* Send Button */}
-              <Button
-                onClick={handleSendMessage}
-                size="icon"
-                className="shrink-0 absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" // Position inside input
-                disabled={
-                  !inputValue.trim() ||
-                  isAssistantResponding ||
-                  isUploading ||
-                  isLoadingHistory
-                }
-                title="Send Message (Enter)" // Tooltip
-              >
-                {isAssistantResponding ? (
-                  <Loader2 className="h-5 w-5 animate-spin" /> // Loading spinner when sending
-                ) : (
-                  <SendHorizontal size={20} /> // Send icon
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <MoreHorizontal size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem onClick={() => handleCommandSelect("video")} className="cursor-pointer">
+                  <Video className="mr-2 h-4 w-4" />
+                  <span>Create video</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleCommandSelect("quiz")} className="cursor-pointer">
+                  <BrainCircuit className="mr-2 h-4 w-4" />
+                  <span>Create quiz</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleCommandSelect("flashcard")} className="cursor-pointer">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  <span>Create flashcard</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="flex-1 flex gap-2">
+              <div className="flex-1 relative">
+                {activeCommand && (
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-primary/10 text-primary rounded-md px-2 py-0.5 text-xs font-medium">
+                    {getCommandIcon(activeCommand)}
+                    <span>
+                      {activeCommand === "video"
+                        ? "Create video"
+                        : activeCommand === "quiz"
+                          ? "Create quiz"
+                          : "Create flashcard"}
+                    </span>
+                    <button
+                      className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
+                      onClick={() => setActiveCommand(null)}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 )}
+                <Input
+                  ref={inputRef}
+                  placeholder="Ask a question or request a learning resource..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSendMessage()
+                    }
+                  }}
+                  className={`flex-1 ${activeCommand ? "pl-32" : ""}`}
+                />
+              </div>
+              <Button onClick={handleSendMessage} size="icon" className="shrink-0">
+                <SendHorizontal size={20} />
               </Button>
             </div>
           </div>
