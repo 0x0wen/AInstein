@@ -28,7 +28,7 @@ import { VideoGenerator } from '@/components/custom/video-generator';
 import { FlashCards } from '@/components/custom/flash-cards';
 import { QuizGenerator } from '@/components/custom/quiz-generator';
 import { createFileRoute } from '@tanstack/react-router';
-import { data as dummy } from '@/dummy';
+import type { StudyKit } from '@/dummy';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { OrbitLoader } from '@/components/custom/loader';
@@ -42,24 +42,53 @@ export const Route = createFileRoute('/_authenticated/study-kit/$id/')({
   component: StudyKitPage,
 });
 
+type Conversation = {
+  id: string;
+  title: string;
+  studyKitId: string;
+  userId: string;
+  createdAt: string;
+  lastMessageAt: string;
+  updatedAt: string;
+};
+
 export default function StudyKitPage() {
   const { id } = Route.useParams();
-  
-  const { isPending, isLoading, isRefetching, error, data } = useQuery({
+  const {
+    isPending,
+    isLoading,
+    isRefetching,
+    data: studykit,
+  } = useQuery<StudyKit, Error>({
     queryKey: ['Studykit', id],
     queryFn: async () => {
       return await api.get(`/studykit/${id}`).then((res) => {
+        return res.data;
+      });
+    },
+  });
+
+  const { data: conversations, isLoading: isConversationLoading } = useQuery<
+    Conversation[],
+    Error
+  >({
+    queryKey: ['conversationId', id],
+    queryFn: async () => {
+      return await api.get(`/conversations/${id}`).then((res) => {
         console.log(res.data);
-        return res;
+        return res.data;
       });
     },
   });
   const [activeView, setActiveView] = useState<'chat' | 'library'>('chat');
 
-  const studykit = error
-    ? dummy.studyKits.find((kit) => kit._id === id)
-    : data?.data;
+  // const studykit = error
+  //  ? dummy.studyKits.find((kit) => kit._id === id)
+  //  : data?.data;
   // const studykit = dummy.studyKits.find((kit) => kit._id === id);
+  // const studykit = error
+  //   ? dummy.studyKits.find((kit) => kit._id === id)
+  //   : data?.data;
   if (!studykit) {
     return <div>Study Kit not found</div>;
   }
@@ -79,12 +108,14 @@ export default function StudyKitPage() {
               <button
                 onClick={() => setActiveView('chat')}
                 className={`px-3 py-1 text-sm cursor-pointer rounded-md ${activeView === 'chat' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                type="button"
               >
                 Chat
               </button>
               <button
                 onClick={() => setActiveView('library')}
                 className={`px-3 py-1 text-sm cursor-pointer rounded-md ${activeView === 'library' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                type="button"
               >
                 Library
               </button>
@@ -93,20 +124,24 @@ export default function StudyKitPage() {
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Progress: 65%</span>
             <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-primary w-[65%]"></div>
+              <div className="h-full bg-primary w-[65%]" />
             </div>
           </div>
         </div>
       </header>
       <div className="flex-1 overflow-hidden w-full">
-        {activeView === 'chat' ? (
-          <ChatInterface studyKit={studykit} conversationId={studykit._id} />
+        {activeView === 'chat' && !isConversationLoading && conversations ? (
+          <ChatInterface
+            studyKit={studykit}
+            conversationId={conversations[0].id}
+          />
         ) : (
           <div>
             <div className="mb-8">
               <div className="relative rounded-lg overflow-hidden mb-6">
                 <div className="aspect-[4/1] w-full overflow-hidden">
                   <Backgrounds
+                    // biome-ignore lint/style/noNonNullAssertion: <explanation>
                     colorTheme={colorTheme!}
                     type={studykit.colorTheme}
                     small={false}
@@ -178,7 +213,7 @@ export default function StudyKitPage() {
                         </Dialog>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {studykit.videoItems != undefined && studykit.videoItems?.map((video: any) => (
+                        {studykit.videoItems?.map((video: any) => (
                           <Dialog key={video.id}>
                             <DialogTrigger asChild>
                               <Card className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden">
@@ -263,7 +298,7 @@ export default function StudyKitPage() {
                         </Dialog>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {studykit.flashcardDecks != undefined && studykit.flashcardDecks?.map((deck: any) => {
+                        {studykit.flashcardDecks?.map((deck: any) => {
                           return (
                             <Dialog key={deck.id}>
                               <DialogTrigger asChild>
@@ -354,7 +389,7 @@ export default function StudyKitPage() {
                         </Dialog>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {studykit.quizItems!= undefined && studykit.quizItems?.map((quiz: any) => (
+                        {studykit.quizItems?.map((quiz: any) => (
                           <Dialog key={quiz.id}>
                             <DialogTrigger asChild>
                               <Card className="cursor-pointer hover:shadow-md transition-shadow">
@@ -396,211 +431,208 @@ export default function StudyKitPage() {
                       </div>
                     </section>
                     {/* Stats sidebar - 1/4 width */}
-                    
                   </div>
                 )}
               </div>
               <div className="lg:col-span-1">
-                      <div className="sticky top-4 space-y-6">
-                        {/* Study Time Card */}
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium flex items-center">
-                              <Clock className="h-4 w-4 mr-2" />
-                              Study Time
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {isLoading || isRefetching ? (
-                              <>
-                                <Skeleton className="bg-muted-foreground/20 h-8 w-24 mb-1" />
-                                <Skeleton className="bg-muted-foreground/20 h-3 w-32" />
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-2xl font-bold">
-                                  12.5 hours
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  +2.3 hours this week
-                                </p>
-                              </>
-                            )}
-                          </CardContent>
-                        </Card>
+                <div className="sticky top-4 space-y-6">
+                  {/* Study Time Card */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Study Time
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {isLoading || isRefetching ? (
+                        <>
+                          <Skeleton className="bg-muted-foreground/20 h-8 w-24 mb-1" />
+                          <Skeleton className="bg-muted-foreground/20 h-3 w-32" />
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-2xl font-bold">12.5 hours</div>
+                          <p className="text-xs text-muted-foreground">
+                            +2.3 hours this week
+                          </p>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                        {/* Progress Card */}
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium flex items-center">
-                              <BarChart className="h-4 w-4 mr-2" />
-                              Progress
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {isLoading || isRefetching ? (
-                              <>
-                                <Skeleton className="bg-muted-foreground/20 h-8 w-16 mb-1" />
-                                <Skeleton className="bg-muted-foreground/20 h-3 w-28 mb-2" />
-                                <Skeleton className="bg-muted-foreground/20 h-2 w-full rounded-full" />
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-2xl font-bold">
-                                  {studykit.progress?.percentage}%
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  +5% from last week
-                                </p>
-                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                  <div
-                                    className="bg-primary h-2 rounded-full"
-                                    style={{
-                                      width: `${studykit.progress?.percentage}%`,
-                                    }}
-                                  />
-                                </div>
-                              </>
-                            )}
-                          </CardContent>
-                        </Card>
+                  {/* Progress Card */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <BarChart className="h-4 w-4 mr-2" />
+                        Progress
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {isLoading || isRefetching ? (
+                        <>
+                          <Skeleton className="bg-muted-foreground/20 h-8 w-16 mb-1" />
+                          <Skeleton className="bg-muted-foreground/20 h-3 w-28 mb-2" />
+                          <Skeleton className="bg-muted-foreground/20 h-2 w-full rounded-full" />
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-2xl font-bold">
+                            {studykit.progress?.percentage}%
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            +5% from last week
+                          </p>
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div
+                              className="bg-primary h-2 rounded-full"
+                              style={{
+                                width: `${studykit.progress?.percentage}%`,
+                              }}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                        {/* Quiz Performance Card */}
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium flex items-center">
-                              <FileQuestion className="h-4 w-4 mr-2" />
-                              Quiz Performance
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {isLoading || isRefetching ? (
-                              <>
-                                <Skeleton className="bg-muted-foreground/20 h-8 w-16 mb-1" />
-                                <Skeleton className="bg-muted-foreground/20 h-3 w-40" />
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-2xl font-bold">85%</div>
-                                <p className="text-xs text-muted-foreground">
-                                  Average score on 5 quizzes
-                                </p>
-                              </>
-                            )}
-                          </CardContent>
-                        </Card>
+                  {/* Quiz Performance Card */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <FileQuestion className="h-4 w-4 mr-2" />
+                        Quiz Performance
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {isLoading || isRefetching ? (
+                        <>
+                          <Skeleton className="bg-muted-foreground/20 h-8 w-16 mb-1" />
+                          <Skeleton className="bg-muted-foreground/20 h-3 w-40" />
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-2xl font-bold">85%</div>
+                          <p className="text-xs text-muted-foreground">
+                            Average score on 5 quizzes
+                          </p>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                        {/* Recent Activity Card */}
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium flex items-center">
-                              <CalendarClock className="h-4 w-4 mr-2" />
-                              Recent Activity
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-0">
-                            {isLoading || isRefetching ? (
-                              <div className="text-sm">
-                                <div className="border-b py-3 px-4">
-                                  <Skeleton className="bg-muted-foreground/20 h-4 w-48 mb-1" />
-                                  <Skeleton className="bg-muted-foreground/20 h-3 w-20" />
-                                </div>
-                                <div className="border-b py-3 px-4">
-                                  <Skeleton className="bg-muted-foreground/20 h-4 w-40 mb-1" />
-                                  <Skeleton className="bg-muted-foreground/20 h-3 w-16" />
-                                </div>
-                                <div className="py-3 px-4">
-                                  <Skeleton className="bg-muted-foreground/20 h-4 w-44 mb-1" />
-                                  <Skeleton className="bg-muted-foreground/20 h-3 w-24" />
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-sm">
-                                <div className="border-b py-3 px-4">
-                                  <div className="font-medium">
-                                    Completed Derivatives Quiz
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    2 hours ago
-                                  </div>
-                                </div>
-                                <div className="border-b py-3 px-4">
-                                  <div className="font-medium">
-                                    Studied Limits Flashcards
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Yesterday
-                                  </div>
-                                </div>
-                                <div className="py-3 px-4">
-                                  <div className="font-medium">
-                                    Watched Integration Video
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    2 days ago
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
+                  {/* Recent Activity Card */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <CalendarClock className="h-4 w-4 mr-2" />
+                        Recent Activity
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {isLoading || isRefetching ? (
+                        <div className="text-sm">
+                          <div className="border-b py-3 px-4">
+                            <Skeleton className="bg-muted-foreground/20 h-4 w-48 mb-1" />
+                            <Skeleton className="bg-muted-foreground/20 h-3 w-20" />
+                          </div>
+                          <div className="border-b py-3 px-4">
+                            <Skeleton className="bg-muted-foreground/20 h-4 w-40 mb-1" />
+                            <Skeleton className="bg-muted-foreground/20 h-3 w-16" />
+                          </div>
+                          <div className="py-3 px-4">
+                            <Skeleton className="bg-muted-foreground/20 h-4 w-44 mb-1" />
+                            <Skeleton className="bg-muted-foreground/20 h-3 w-24" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm">
+                          <div className="border-b py-3 px-4">
+                            <div className="font-medium">
+                              Completed Derivatives Quiz
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              2 hours ago
+                            </div>
+                          </div>
+                          <div className="border-b py-3 px-4">
+                            <div className="font-medium">
+                              Studied Limits Flashcards
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Yesterday
+                            </div>
+                          </div>
+                          <div className="py-3 px-4">
+                            <div className="font-medium">
+                              Watched Integration Video
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              2 days ago
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                        {/* Resources Card */}
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium flex items-center">
-                              <FolderDot className="h-4 w-4 mr-2" />
-                              Resources
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-0">
-                            {isLoading || isRefetching ? (
-                              <div className="text-sm">
-                                <div className="border-b py-3 px-4">
-                                  <Skeleton className="bg-muted-foreground/20 h-4 w-36 mb-1" />
-                                  <Skeleton className="bg-muted-foreground/20 h-3 w-28" />
-                                </div>
-                                <div className="border-b py-3 px-4">
-                                  <Skeleton className="bg-muted-foreground/20 h-4 w-40 mb-1" />
-                                  <Skeleton className="bg-muted-foreground/20 h-3 w-24" />
-                                </div>
-                                <div className="py-3 px-4">
-                                  <Skeleton className="bg-muted-foreground/20 h-4 w-44 mb-1" />
-                                  <Skeleton className="bg-muted-foreground/20 h-3 w-32" />
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-sm">
-                                <div className="border-b py-3 px-4">
-                                  <div className="font-medium">
-                                    Calculus Textbook.pdf
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Added 3 days ago
-                                  </div>
-                                </div>
-                                <div className="border-b py-3 px-4">
-                                  <div className="font-medium">
-                                    Derivatives Notes.docx
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Added yesterday
-                                  </div>
-                                </div>
-                                <div className="py-3 px-4">
-                                  <div className="font-medium">
-                                    Integration Examples.pdf
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Added 5 hours ago
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
+                  {/* Resources Card */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <FolderDot className="h-4 w-4 mr-2" />
+                        Resources
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {isLoading || isRefetching ? (
+                        <div className="text-sm">
+                          <div className="border-b py-3 px-4">
+                            <Skeleton className="bg-muted-foreground/20 h-4 w-36 mb-1" />
+                            <Skeleton className="bg-muted-foreground/20 h-3 w-28" />
+                          </div>
+                          <div className="border-b py-3 px-4">
+                            <Skeleton className="bg-muted-foreground/20 h-4 w-40 mb-1" />
+                            <Skeleton className="bg-muted-foreground/20 h-3 w-24" />
+                          </div>
+                          <div className="py-3 px-4">
+                            <Skeleton className="bg-muted-foreground/20 h-4 w-44 mb-1" />
+                            <Skeleton className="bg-muted-foreground/20 h-3 w-32" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm">
+                          <div className="border-b py-3 px-4">
+                            <div className="font-medium">
+                              Calculus Textbook.pdf
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Added 3 days ago
+                            </div>
+                          </div>
+                          <div className="border-b py-3 px-4">
+                            <div className="font-medium">
+                              Derivatives Notes.docx
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Added yesterday
+                            </div>
+                          </div>
+                          <div className="py-3 px-4">
+                            <div className="font-medium">
+                              Integration Examples.pdf
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Added 5 hours ago
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
