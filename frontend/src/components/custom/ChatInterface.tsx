@@ -21,6 +21,8 @@ import type { StudyKit } from '@/dummy'; // Adjust path and ensure StudyKit type
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'
 
 // Define the structure for different message types in the chat
 type MessageType =
@@ -71,7 +73,23 @@ export function ChatInterface({
   conversationId,
 }: ChatInterfaceProps) {
   // --- State Variables ---
-  const [messages, setMessages] = useState<MessageType[]>([]); // Stores all chat messages
+  const [messages, setMessages] = useState<MessageType[]>([{ type: 'text', content: '# Advanced Markdown Example\n\n' +
+    'This example includes:\n\n' +
+    '- **Bold text** and *italic text*\n' +
+    '- [Links](https://example.com)\n' +
+    '- Tables (via remark-gfm)\n\n' +
+    '| Header 1 | Header 2 |\n' +
+    '| -------- | -------- |\n' +
+    '| Cell 1   | Cell 2   |\n' +
+    '| Cell 3   | Cell 4   |\n\n' +
+    '```javascript\n' +
+    '// Code with syntax highlighting\n' +
+    'function hello() {\n' +
+    '  console.log("Hello, world!");\n' +
+    '}\n' +
+    '```\n\n' +
+    '> This is a blockquote\n\n' +
+    '~~Strikethrough text~~', sender: 'assistant' },{ type: 'text', content: '# Hello', sender: 'assistant' },{ type: 'text', content: '# Hello', sender: 'assistant' }]); // Stores all chat messages
   const [inputValue, setInputValue] = useState(''); // Current value of the text input
   const [activeContent, setActiveContent] = useState<{
     // State for the right-side panel (video, quiz, etc.)
@@ -107,7 +125,7 @@ export function ChatInterface({
   const fetchHistory = useCallback(async () => {
     console.log('Fetching history for StudyKit ID:', conversationId);
     setIsLoadingHistory(true);
-    setMessages([]); // Clear messages before fetching new history
+    // setMessages([]); // Clear messages before fetching new history
 
     try {
       console.log('History data received:', historyData);
@@ -555,7 +573,11 @@ export function ChatInterface({
                 : 'bg-muted text-foreground mr-auto' // Assistant message: Grey, left-aligned
             } whitespace-pre-wrap break-words`} // Ensure text wraps
           >
+            <div className="markdown-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {message.content}
+            </ReactMarkdown>
+            </div>
             {/* Show subtle loading dots if this is the last message, it's from assistant, and still responding */}
             {message.sender === 'assistant' &&
               isAssistantResponding &&

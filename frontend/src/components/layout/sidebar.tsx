@@ -49,6 +49,7 @@ export function Sidebar({studykitId}:{studykitId:string}) {
       });
     },
   });
+  
 
   // Update the expanded kits if the current studykit isn't expanded
   useEffect(() => {

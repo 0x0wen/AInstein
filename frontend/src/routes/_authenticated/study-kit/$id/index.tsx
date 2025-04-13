@@ -130,7 +130,7 @@ export default function StudyKitPage() {
         </div>
       </header>
       <div className="flex-1 overflow-hidden w-full">
-        {activeView === 'chat' && !isConversationLoading && conversations ? (
+        {activeView === 'chat' && !isConversationLoading && conversations && conversations.length > 0 ? (
           <ChatInterface
             studyKit={studykit}
             conversationId={conversations[0].id}
