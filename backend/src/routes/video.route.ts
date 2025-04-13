@@ -6,7 +6,7 @@ import { VideoRequestSchema, VideoResponseSchema } from "@/models/video.model";
 const video_route = new OpenAPIHono();
 const video_controller = new VideoController();
 
-const getAllStudykitRoute = video_route.openapi(
+const getAllVideoRoute = video_route.openapi(
 	createRoute({
 		method: "get",
 		path: "/",
@@ -41,10 +41,10 @@ const getAllStudykitRoute = video_route.openapi(
 	video_controller.fetchAllVideo,
 );
 
-const getStudykitRoute = video_route.openapi(
+const getVideoRoute = video_route.openapi(
 	createRoute({
 		method: "get",
-		path: "/:studykitId",
+		path: "/:videoId",
 		responses: {
 			200: {
 				content: {
@@ -79,7 +79,7 @@ const getStudykitRoute = video_route.openapi(
 const deleteStudykitRoute = video_route.openapi(
 	createRoute({
 		method: "delete",
-		path: "/:studykitId",
+		path: "/:videoId",
 		responses: {
 			200: {
 				content: {
@@ -111,7 +111,7 @@ const deleteStudykitRoute = video_route.openapi(
 	video_controller.deleteVideo,
 );
 
-const createStudykitRoute = video_route.openapi(
+const createVideoRoute = video_route.openapi(
 	createRoute({
 		method: "post",
 		path: "/",
@@ -164,9 +164,9 @@ const createStudykitRoute = video_route.openapi(
 );
 
 export {
-	getAllStudykitRoute,
-	getStudykitRoute,
+	getAllVideoRoute,
+	getVideoRoute,
 	deleteStudykitRoute,
-	createStudykitRoute,
+	createVideoRoute,
 };
 export default video_route;
