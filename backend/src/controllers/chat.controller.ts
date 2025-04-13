@@ -1,4 +1,5 @@
 import { ChatRequestSchema, ChatResponseSchema } from "@/models/chat.model";
+import conversation from "@/routes/conversation.route";
 import {
 	fetchChatHistory,
 	processMessageStream,
@@ -26,7 +27,7 @@ export class ChatController {
 				return c.json({ error: "No file uploaded or invalid format" }, 400);
 			}
 
-			const resource = await uploadFileForStudykit(studyKitId, file, userId);
+			const resource = await uploadFileForStudykit(studyKitId, file);
 
 			return c.json(
 				{
@@ -37,6 +38,7 @@ export class ChatController {
 				},
 				201,
 			);
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
 			console.error("File upload error:", error);
 			return c.json({ error: error.message || "Failed to upload file" }, 500);
@@ -45,7 +47,7 @@ export class ChatController {
 
 	streamChat = async (c: Context) => {
 		try {
-			const studyKitId = c.req.param("studykitId");
+			const conversationId = c.req.param("studykitId");
 			// Get user ID from auth middleware
 			const userId = c.get("user")?.id;
 			if (!userId) {
@@ -73,7 +75,7 @@ export class ChatController {
 			const { content: userContent } = validation.data;
 
 			const assistantStream = await processMessageStream(
-				studyKitId,
+				conversationId,
 				userId,
 				userContent,
 			);
@@ -138,7 +140,7 @@ export class ChatController {
 						try {
 							if (accumulatedAssistantResponse) {
 								await saveAssistantMessage(
-									studyKitId,
+									conversationId,
 									userId,
 									accumulatedAssistantResponse,
 								);
@@ -148,6 +150,7 @@ export class ChatController {
 								event: "message_complete",
 								data: "Stream finished",
 							});
+							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 						} catch (saveError: any) {
 							console.error("Failed to save assistant message:", saveError);
 							stream.writeSSE({
@@ -161,6 +164,7 @@ export class ChatController {
 				console.log("SSE stream connection closed.");
 				// Stream closes automatically when the 'async function*' completes
 			});
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
 			console.error("Streaming chat error:", error);
 			// If error happens before stream starts, return JSON error
@@ -198,33 +202,16 @@ export class ChatController {
 
 			// Map to response schema, handling potential population of userId
 			const responseData = displayHistory.map((msg) => {
-				// Safely determine the userId string
-				let userIdString: string;
-				if (msg.userId instanceof mongoose.Types.ObjectId) {
-					userIdString = msg.userId.toString();
-				} else if (typeof msg.userId === "object" && msg.userId?.id) {
-					// It's populated, use the _id from the populated object
-					userIdString = msg.userId.id.toString();
-				} else {
-					// Fallback or error case - should not happen with correct population
-					console.error(
-						"Unexpected userId type in fetched history:",
-						msg.userId,
-					);
-					userIdString = "unknown_user"; // Or handle as error
-				}
-
-				// Parse using Zod schema
 				return ChatResponseSchema.parse({
 					...msg.toJSON(), // Use toJSON to get plain object, includes fields like content, role, createdAt
 					id: msg.id.toString(), // Explicitly use document's _id
-					studyKitId: msg.studyKitId.toString(), // studyKitId is always ObjectId here
-					userId: userIdString, // Use the determined string ID
+					conversationId: msg.conversationId.toString(), // studyKitId is always ObjectId here
 					contextResources: msg.contextResources?.map((id) => id.toString()), // Map context resource ObjectIds
 				});
 			});
 
 			return c.json(responseData);
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		} catch (error: any) {
 			console.error(
 				`Fetch chat history error for StudyKit ${c.req.param("studykitId")}:`,

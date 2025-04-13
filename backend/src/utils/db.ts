@@ -26,7 +26,7 @@ export const client = new MongoClient(
 
 const videoCollection = client.db().collection("videos");
 const studykitCollection = client.db().collection("studykits");
-const userCollection = client.db().collection("users");
+const userCollection = client.db().collection("user");
 const quizCollection = client.db().collection("quizzes");
 const flashcardCollection = client.db().collection("flashcards");
 const resourceCollection = client.db().collection("resources");

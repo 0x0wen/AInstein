@@ -3,7 +3,8 @@ import {
 	ConversationRequestSchema,
 	ConversationResponseSchema,
 } from "@/models/conversation.model";
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import mongoose from "mongoose";
 
 const conversation = new OpenAPIHono();
 const conversationController = new ConversationController();
@@ -36,8 +37,14 @@ const createConversationRoute = conversation.openapi(
 const getAllConversationByUserAndStudyKit = conversation.openapi(
 	createRoute({
 		method: "get",
-		path: "/conversations",
+		path: "/conversations/:studykitId",
 		request: {
+			params: z.object({
+				studykitId: z.string().openapi({
+					description: "ID of the StudyKit",
+					example: new mongoose.Types.ObjectId().toString(),
+				}),
+			}),
 			body: {
 				content: {
 					"application/json": {
@@ -55,7 +62,7 @@ const getAllConversationByUserAndStudyKit = conversation.openapi(
 		description:
 			"Uploads a file, sends it to OpenAI Assistants API, associates it with a StudyKit, and stores a reference in the database.",
 	}),
-	conversationController.createConversation,
+	conversationController.getAllConversationsByUserId,
 );
 
 export { createConversationRoute, getAllConversationByUserAndStudyKit };

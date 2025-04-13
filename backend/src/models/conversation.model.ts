@@ -8,6 +8,8 @@ export interface IConversation {
 	studyKitId: mongoose.Types.ObjectId | IStudykit;
 	userId: mongoose.Types.ObjectId | IUser;
 	lastMessageAt: Date;
+	openaiAssistantId?: string | null;
+	openaiThreadId?: string | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -30,6 +32,7 @@ const ConversationSchema: Schema<IConversationDocument> = new Schema(
 			index: true,
 		},
 		lastMessageAt: { type: Date, default: Date.now },
+		openaiAssistantId: { type: String, default: null },
 	},
 	{ timestamps: true },
 );

@@ -2,11 +2,13 @@ import {
 	ConversationRequestSchema,
 	ConversationResponseSchema,
 	GetAllConversationRequestSchema,
+	IConversationDocument,
 } from "@/models/conversation.model";
 import {
 	createConversation,
 	getConversationsByUserAndStudyKit,
 } from "@/services/conversation.service";
+import type { Context } from "hono";
 
 export class ConversationController {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -37,11 +39,9 @@ export class ConversationController {
 		}
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	async getAllConversationsByUserId(c: any) {
-		const request = GetAllConversationRequestSchema.parse(c.req.valid("json"));
+	async getAllConversationsByUserId(c: Context) {
 		const userId = c.get("user").id;
-		const studyKitId = request.studyKitId;
+		const studyKitId = c.req.param("studykitId");
 
 		try {
 			const result = await getConversationsByUserAndStudyKit(
@@ -49,15 +49,22 @@ export class ConversationController {
 				studyKitId,
 			);
 
-			const response = ConversationResponseSchema.array().parse(result);
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const parsedResult = result.map((conversation: any) => ({
+				id: conversation._id.toString(),
+				title: conversation.title,
+				studyKitId: conversation.studyKitId._id.toString(),
+				lastMessageAt: conversation.lastMessageAt,
+				createdAt: conversation.createdAt,
+			}));
 
-			return c.json(response, 200);
+			return c.json(parsedResult, 200);
 		} catch (error) {
 			if (error instanceof Error) {
 				return c.json(
 					{
 						success: false,
-						message: "Conversation creation failed!",
+						message: "Get conversations error!",
 						error: error.message,
 					},
 					500,

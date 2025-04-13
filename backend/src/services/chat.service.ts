@@ -1,4 +1,3 @@
-import { Studykit, type IStudykit } from "@/models/studykit.model";
 import mongoose from "mongoose";
 import { Resource, type IResource } from "@/models/resource.model";
 import openai from "@/utils/openai";
@@ -8,15 +7,15 @@ import type { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { Conversation } from "@/models/conversation.model";
 
 export async function uploadFileForStudykit(
-	conversationId: mongoose.Types.ObjectId,
+	conversationId: string,
 	file: File,
 ): Promise<IResource> {
 	if (!mongoose.Types.ObjectId.isValid(conversationId)) {
 		throw new Error("Invalid StudyKit ID format");
 	}
 
-	const studykit = await Conversation.findById(conversationId);
-	if (!studykit) {
+	const conversation = await Conversation.findById(conversationId);
+	if (!conversation) {
 		throw new Error("StudyKit not found");
 	}
 
@@ -29,26 +28,28 @@ export async function uploadFileForStudykit(
 
 		// 2. Create Resource in DB
 		const newResource = new Resource({
-			studyKitId: studykit._id,
+			conversationId: conversation._id,
 			openaiFileId: openaiFile.id,
 			filename: file.name,
-			// Add userId if needed for ownership/permissions
 		});
 		await newResource.save();
 
 		// 3. Attach file to Assistant if it exists
-		if (studykit.openaiAssistantId) {
+		if (conversation.openaiAssistantId) {
 			try {
 				// @ts-ignore - OpenAI types are not up to date
-				await openai.beta.assistants.files.create(studykit.openaiAssistantId, {
-					file_id: openaiFile.id,
-				});
+				await openai.beta.assistants.files.create(
+					conversation.openaiAssistantId,
+					{
+						file_id: openaiFile.id,
+					},
+				);
 				console.log(
-					`File ${openaiFile.id} attached to Assistant ${studykit.openaiAssistantId}`,
+					`File ${openaiFile.id} attached to Assistant ${conversation.openaiAssistantId}`,
 				);
 			} catch (error) {
 				console.error(
-					`Failed to attach file ${openaiFile.id} to assistant ${studykit.openaiAssistantId}:`,
+					`Failed to attach file ${openaiFile.id} to assistant ${conversation.openaiAssistantId}:`,
 					error,
 				);
 				// Continue anyway - the file is still uploaded and can be attached to messages
@@ -63,9 +64,9 @@ export async function uploadFileForStudykit(
 }
 
 export async function getOrCreateAssistantAndThread(
-	studyKitId: string,
+	conversationId: string,
 ): Promise<{ assistantId: string; threadId: string }> {
-	const studykit = await Studykit.findById(studyKitId).exec();
+	const studykit = await Conversation.findById(conversationId).exec();
 	if (!studykit) {
 		throw new Error("StudyKit not found");
 	}
@@ -83,11 +84,11 @@ export async function getOrCreateAssistantAndThread(
 		const fileIds = resources.map((r) => r.openaiFileId);
 
 		console.log(
-			`Creating new Assistant for StudyKit ${studyKitId} with files: ${fileIds.join(", ")}`,
+			`Creating new Assistant for StudyKit ${conversationId} with files: ${fileIds.join(", ")}`,
 		);
 		try {
 			const assistant = await openai.beta.assistants.create({
-				name: `StudyKit Assistant ${studyKitId}`,
+				name: `StudyKit Assistant ${conversationId}`,
 				instructions:
 					"You are a helpful study assistant. Use the provided files to answer questions about the study material. Be concise, accurate, and helpful. If you're not sure about something, acknowledge the uncertainty.",
 				model: "gpt-4-turbo-preview", // Or your preferred model
@@ -125,7 +126,7 @@ export async function getOrCreateAssistantAndThread(
 
 	// Create Thread if it doesn't exist
 	if (!threadId) {
-		console.log(`Creating new Thread for StudyKit ${studyKitId}`);
+		console.log(`Creating new Thread for StudyKit ${conversationId}`);
 		try {
 			const thread = await openai.beta.threads.create();
 			threadId = thread.id;
@@ -151,24 +152,17 @@ export async function getOrCreateAssistantAndThread(
 
 // --- Process Chat Message (Streaming) ---
 export async function processMessageStream(
-	studyKitId: string,
+	conversationId: string,
 	userId: string,
 	userContent: string,
 ): Promise<
 	Stream<AssistantStreamEvent> & { _request_id?: string | null | undefined }
 > {
-	if (
-		!mongoose.Types.ObjectId.isValid(studyKitId) ||
-		!mongoose.Types.ObjectId.isValid(userId)
-	) {
-		throw new Error("Invalid StudyKit or User ID format");
-	}
-
 	const { assistantId, threadId } =
-		await getOrCreateAssistantAndThread(studyKitId);
+		await getOrCreateAssistantAndThread(conversationId);
 
 	const resources = await Resource.find({
-		studyKitId: new mongoose.Types.ObjectId(studyKitId),
+		conversationId: conversationId,
 	})
 		.select("openaiFileId")
 		.exec();
@@ -180,16 +174,18 @@ export async function processMessageStream(
 		await openai.beta.threads.messages.create(threadId, {
 			role: "user",
 			content: userContent,
-			attachments: fileIds.map((fileId) => ({ file_id: fileId })),
+			attachments: fileIds.map((fileId) => ({
+				file_id: fileId,
+				tools: [{ type: "file_search" }],
+			})),
 		});
 
 		// Save user message to our DB (do this *before* starting the stream)
 		const userChat = new Chat({
-			studyKitId,
+			conversationId,
 			userId,
 			content: userContent,
 			role: "user",
-			// Link resource documents
 			contextResources: resources.map((r) => r._id),
 		});
 		await userChat.save();
@@ -210,13 +206,13 @@ export async function processMessageStream(
 // --- Save Assistant's Final Message ---
 // This should be called after the stream is fully processed
 export async function saveAssistantMessage(
-	studyKitId: string,
+	conversationId: string,
 	userId: string,
 	assistantContent: string,
 ): Promise<IChatDocument> {
 	try {
 		const assistantChat = new Chat({
-			studyKitId,
+			conversationId,
 			userId, // Link assistant message to the user who initiated the request
 			content: assistantContent,
 			role: "assistant",
@@ -233,11 +229,13 @@ export async function saveAssistantMessage(
 
 // --- Fetch Chat History ---
 export async function fetchChatHistory(
-	studyKitId: string | number,
+	conversationId: string | number,
 	limit = 50,
 ): Promise<IChatDocument[]> {
 	try {
-		const studyKit = await Studykit.findOne({ numericId: studyKitId }).exec();
+		const studyKit = await Conversation.findOne({
+			_id: conversationId,
+		}).exec();
 		if (!studyKit) {
 			throw new Error("StudyKit not found");
 		}

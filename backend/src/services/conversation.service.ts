@@ -5,7 +5,6 @@ import {
 	type IConversationDocument,
 } from "../models/conversation.model";
 import { Studykit } from "../models/studykit.model";
-import { User } from "../models/user.model";
 
 /**
  * Creates a new conversation.
@@ -23,12 +22,6 @@ export const createConversation = async (
 		const studyKitExists = await Studykit.findById(studyKitId);
 		if (!studyKitExists) {
 			throw new Error("Study kit not found");
-		}
-
-		// Check if the user exists.
-		const userExists = await User.findById(userId);
-		if (!userExists) {
-			throw new Error("User not found");
 		}
 
 		const conversation = new Conversation({
@@ -127,18 +120,17 @@ export const getConversationsByUserAndStudyKit = async (
 			throw new Error("Invalid study kit ID");
 		}
 
-		// Convert userId and studyKitId to ObjectIds
-		const userIdObj = new mongoose.Types.ObjectId(userId);
-		const studyKitIdObj = new mongoose.Types.ObjectId(studyKitId);
+		console.log("User ID:", userId);
+		console.log("Study Kit ID:", studyKitId);
 
 		// Find all conversations where both userId and studyKitId match.
 		const conversations = await Conversation.find({
-			userId: userIdObj,
-			studyKitId: studyKitIdObj,
+			userId: userId,
+			studyKitId: studyKitId,
 		})
 			.populate({
 				path: "studyKitId",
-				model: "StudyKit",
+				model: "Studykit",
 				select: "_id title",
 			})
 			.populate({
@@ -148,6 +140,8 @@ export const getConversationsByUserAndStudyKit = async (
 			})
 			.sort({ lastMessageAt: -1 })
 			.exec();
+
+		console.log("Conversations:", conversations);
 		return conversations;
 	} catch (error) {
 		console.error(

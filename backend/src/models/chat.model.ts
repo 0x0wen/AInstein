@@ -42,7 +42,6 @@ ChatSchema.index({ conversationId: 1, createdAt: 1 });
 
 // Chat Request Schema
 export const ChatRequestSchema = z.object({
-	conversationId: z.string({ message: "Conversation ID is required" }),
 	content: z.string().min(1, { message: "Chat content is required" }),
 });
 
