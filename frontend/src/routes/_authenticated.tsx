@@ -1,12 +1,20 @@
 import { Sidebar } from '@/components/layout/sidebar';
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet, MatchRoute, useRouterState } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_authenticated')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { studykitId = '' } = Route.useParams();
+  const routerState = useRouterState();
+  
+  // Find the studykit route match if it exists
+  const studyKitMatch = routerState.matches.find(match => 
+    match.routeId.includes('study-kit')
+  );
+  
+  // Get the studykitId parameter if it exists
+  const studykitId = studyKitMatch?.params?.id;
   
   return (
     <div className="flex min-h-screen w-full">

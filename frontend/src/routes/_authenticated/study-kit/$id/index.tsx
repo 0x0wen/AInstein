@@ -37,12 +37,12 @@ import { colorOptions } from '../create';
 import Backgrounds from '@/components/custom/Backgrounds';
 import { useState } from 'react';
 import { ChatInterface } from '@/components/custom/ChatInterface';
-
+import { data as dummy } from '@/dummy';
 export const Route = createFileRoute('/_authenticated/study-kit/$id/')({
   component: StudyKitPage,
 });
 
-type Conversation = {
+export type Conversation = {
   id: string;
   title: string;
   studyKitId: string;

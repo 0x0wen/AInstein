@@ -31,7 +31,7 @@ export function VideoGenerator({ studyKitId }: VideoGeneratorProps) {
     {
       id: '1',
       title: 'Understanding Derivatives',
-      thumbnail: '/placeholder.svg?height=180&width=320',
+      thumbnail: '/placeholderAInstein1.jpeg?height=180&width=320',
       duration: '5:32',
       date: 'Nov 15, 2023',
       status: 'completed',
@@ -39,7 +39,7 @@ export function VideoGenerator({ studyKitId }: VideoGeneratorProps) {
     {
       id: '2',
       title: 'Limits Explained',
-      thumbnail: '/placeholder.svg?height=180&width=320',
+      thumbnail: '/PlaceholderAInstein2.jpeg?height=180&width=320',
       duration: '4:18',
       date: 'Nov 14, 2023',
       status: 'completed',
@@ -47,7 +47,7 @@ export function VideoGenerator({ studyKitId }: VideoGeneratorProps) {
     {
       id: '3',
       title: 'Integration Techniques',
-      thumbnail: '/placeholder.svg?height=180&width=320',
+      thumbnail: '/PlaceholderAInstein3.png?height=180&width=320',
       duration: '7:45',
       date: 'Nov 16, 2023',
       status: 'processing',
