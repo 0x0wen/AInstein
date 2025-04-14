@@ -15,10 +15,12 @@ function RouteComponent() {
   
   // Get the studykitId parameter if it exists
   const studykitId = studyKitMatch?.params?.id;
+  const conversationId = studyKitMatch?.search?.conversation;
+  const view = studyKitMatch?.search?.view;
   
   return (
     <div className="flex min-h-screen w-full">
-      <Sidebar studykitId={studykitId}/>
+      <Sidebar studykitId={studykitId} conversationId={conversationId} view={view}/>
       <main className="flex-1 bg-white">
         <Outlet />
       </main>

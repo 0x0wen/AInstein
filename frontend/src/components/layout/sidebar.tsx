@@ -29,7 +29,7 @@ import api from '@/lib/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Conversation } from '@/routes/_authenticated/study-kit/$id';
 
-export function Sidebar({studykitId}:{studykitId:string}) {
+export function Sidebar({studykitId, conversationId, view}:{studykitId:string, conversationId: string, view: string}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [collapsed, setCollapsed] = useState(false);
@@ -55,7 +55,7 @@ export function Sidebar({studykitId}:{studykitId:string}) {
   queryKey: ['conversationId', studykitId],
   queryFn: async () => {
     return await api.get(`/conversations/${studykitId}`).then((res) => {
-      console.log("ASU",res.data);
+      console.log(res.data);
       return res.data;
     });
   },
@@ -233,7 +233,7 @@ export function Sidebar({studykitId}:{studykitId:string}) {
                         view: 'chat'
                       })}
                       className={`w-full flex items-center gap-2 p-2 rounded-md text-left text-sm ${
-                        studykitId === kit._id ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/50"
+                        conversationId === conversation.id ? "bg-muted text-primary" : "text-muted-foreground hover:bg-muted/50"
                       }`}
                     >
                       <MessageSquare size={14} />
